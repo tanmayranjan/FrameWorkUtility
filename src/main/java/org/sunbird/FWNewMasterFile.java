@@ -114,7 +114,7 @@ static  JSONObject getFWresponse;
       catch (Exception e){
           e.printStackTrace();
           System.err.println("createFramework method --> Exception :" + e.getMessage());
-
+          System.exit(1);
       }
     }
 
@@ -152,7 +152,7 @@ static  JSONObject getFWresponse;
             String catgResponse = readCategory(strFrameworkId, category);
             if (termResponse.equals("failed") && catgResponse.equalsIgnoreCase("successful")) {
                 strApiUrl = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_framework_category_term_create", "") + "=" + strFrameworkId + "&category=" + category;
-                logger.finest("In Framework MasterFile --> FWCat - Board - Term create --> strApiUrl:: " + strApiUrl);
+                logger.finest("In Framework MasterFile -->  Term create --> strApiUrl:: " + strApiUrl);
                 strApiBody = "{\"request\": {\"term\": {\"name\": \"" + term + "\", \"description\": \"" + term + "\", " +
                         "\"code\":\"" + term.toLowerCase().replaceAll("\\s+", "") + "\"}}}";
                 logger.finest("In Framework MasterFile --> FWCat - " + term + "- Term create --> strApiBody:: " + strApiBody);
@@ -410,6 +410,7 @@ static  JSONObject getFWresponse;
     }
     public String checkParent(String strFrameworkId, String category, String Term){
         try {
+            JSONArray parents = new JSONArray();
             strApiUrl = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_framework_category_term_read", "") + Term.toLowerCase().replaceAll("\\s+", "") + "?framework=" + strFrameworkId + "&category=" + category;
             logger.finest("In Framework MasterFile --> " + Term + "Term read --> strApiUrl:: " + strApiUrl);
             String strTermReadResponse = Postman.getDetails(logger, strApiUrl, strToken);
@@ -417,8 +418,8 @@ static  JSONObject getFWresponse;
             JSONObject getTermDtlsresponse = (JSONObject) parser.parse(strTermReadResponse);
                 JSONObject getTermDtlsResult = (JSONObject) getTermDtlsresponse.get("result");
                 JSONObject getTermDtls = (JSONObject) getTermDtlsResult.get("term");
-                JSONArray parents = (JSONArray) getTermDtls.get("parents");
-                if(parents.size() > 0){
+                 parents = (JSONArray) getTermDtls.get("parents");
+                if(parents != null && parents.size() > 0){
                     JSONObject parentObj = (JSONObject)parents.get(0);
                     String id = parentObj.get("identifier").toString();
                     String parentReq = "\"parents\" : [{\"identifier\": \"" + id +"\" }]";
@@ -431,7 +432,7 @@ static  JSONObject getFWresponse;
         }
         catch (Exception e){
             e.printStackTrace();
-            System.err.println("readTerm method --> Exception :" + e.getMessage());
+            System.err.println("checkparent method --> Exception :" + e.getMessage());
            return "failed";
         }
     }

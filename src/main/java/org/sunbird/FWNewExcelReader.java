@@ -119,7 +119,11 @@ public class FWNewExcelReader {
                                     header = sheet.getRow(0).getCell(j);
                                     heading = header.toString().toLowerCase().replaceAll("\\s+","");
                                     if(heading.equalsIgnoreCase("parentcategory")){
-                                        parentCategoryForAssociation = cell.toString();
+                                        if(cell.toString() != null){
+                                            parentCategoryForAssociation = cell.toString();
+
+                                        }
+                                       // parentCategoryForAssociation = cell.toString();
                                         if(!temp.equalsIgnoreCase(parentCategoryForAssociation)){
                                             // Association
                                             jo.put("categories",categories);
@@ -133,7 +137,10 @@ public class FWNewExcelReader {
                                         }
                                     }
                                     else if(heading.equalsIgnoreCase("parentterm")){
-                                        parentTermForAssociation = cell.toString();
+                                       if(cell.toString() != null){
+                                           parentTermForAssociation = cell.toString();
+                                       }
+                                      //  parentTermForAssociation = cell.toString();
                                         if(!temp2.equalsIgnoreCase(parentTermForAssociation)){
                                             // Association
                                             jo.put("categories",categories);
@@ -173,7 +180,10 @@ public class FWNewExcelReader {
                             else{
                                 if(j == 0) {
                                     // get the category code
-                                    parentCategoryCode = sheetname;
+                                    if(cell.toString() != null){
+                                        parentCategoryCode = cell.toString();
+                                    }
+                                   // parentCategoryCode = sheetname;
                                     if(parentCategoryCode.replaceAll("\\s+", "").equalsIgnoreCase("gradelevel")){
                                         parentCategoryCode = "gradeLevel";
                                     }
@@ -183,9 +193,10 @@ public class FWNewExcelReader {
                                     parentTerm=cell.toString();
                                 }
                                 else {
-                                    // get the child term
+                                    // Create the child term
+                                    masternew.createTerm(strFrameworkId,strChannel,parentCategoryCode,cell.toString());
+                                    // Add the child term to list
                                     childTerm.add(cell.toString());
-                                    //   masternew.createParentChildRelation(strFrameworkId,strChannel,sheetname,parentTerm,childTerm);
                                 }
                             }
 
@@ -212,6 +223,7 @@ public class FWNewExcelReader {
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("FWExcel Reader --> Exception :" + e.getMessage());
+            System.exit(1);
         }
 
 //		System.out.println("FWExcel Reader --> lContentList.size:: " + lContentList.size());

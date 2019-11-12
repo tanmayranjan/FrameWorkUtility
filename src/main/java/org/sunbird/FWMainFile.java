@@ -83,7 +83,7 @@ public class FWMainFile {
 							System.out.println("Framework published Successfully");
 						}
 					}
-					newmaster.errorList();
+				//	newmaster.errorList();
 					break;
 				case 2 :
 					System.out.println("Enter framework id to publish ::");
