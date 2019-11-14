@@ -148,7 +148,10 @@ static  JSONObject getFWresponse;
 
     public void createTerm(String strFrameworkId, String strChannel, String category, String term)  {
         try {
-            String termResponse = readTerm(strFrameworkId, category, term);
+            String termResponse="";
+            if(term != null) {
+            termResponse = readTerm(strFrameworkId, category, term);
+            }
             String catgResponse = readCategory(strFrameworkId, category);
             if (termResponse.equals("failed") && catgResponse.equalsIgnoreCase("successful")) {
                 strApiUrl = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_framework_category_term_create", "") + "=" + strFrameworkId + "&category=" + category;
@@ -178,9 +181,12 @@ static  JSONObject getFWresponse;
 
     public void createParentChildRelation(String strFrameworkId, String strChannel, String category, String parentTerm, ArrayList<String> childTerm)  {
        try {
-           parentTerm = parentTerm.toLowerCase().replaceAll("\\s+", "");
-           String parentTermIdentifier = readTerm(strFrameworkId, category, parentTerm);
-           String childTermIdentifer;
+           String parentTermIdentifier="";
+           if(parentTerm !=null) {
+               parentTerm = parentTerm.toLowerCase().replaceAll("\\s+", "");
+                parentTermIdentifier = readTerm(strFrameworkId, category, parentTerm);
+           }
+           String childTermIdentifer="";
            String strtermResponse;
            //    boolean flag = true;
            if (parentTermIdentifier != "" && !parentTermIdentifier.equals("failed")) {
@@ -190,7 +196,9 @@ static  JSONObject getFWresponse;
                strApiBody = "{\"request\": {\"term\": {\"children\": [";
 
                for (int i = 0; i < childTerm.size(); i++) {
-                   childTermIdentifer = readTerm(strFrameworkId, category, childTerm.get(i).toLowerCase().replaceAll("\\s+", ""));
+                   if(childTerm.get(i) !=null){
+                       childTermIdentifer = readTerm(strFrameworkId, category, childTerm.get(i).toLowerCase().replaceAll("\\s+", ""));
+                   }
                    //    flag =  validateParentChildRelation(strFrameworkId,category,parentTerm,childTermIdentifer);
                    if (!childTermIdentifer.equals("failed") && childTermIdentifer != "") {
                        strApiBody = strApiBody + "{\"identifier\": \"" + childTermIdentifer + "\"},";
