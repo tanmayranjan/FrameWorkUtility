@@ -81,7 +81,7 @@ public class FWNewExcelReader {
                                 errorList.add("Empty cell on Sheet " +sheetname+ " on row "+ (i+1) +" on column " + (j+1) + "\n");
                                 continue;
                             }
-                            if(sheetname.equalsIgnoreCase("categories&terms")){
+                            if(sheetname.equalsIgnoreCase("categories")){
 
                                 if(j == 1){
                                     tempName = row.getCell(j-1);
@@ -100,11 +100,11 @@ public class FWNewExcelReader {
 
 
                                 }
-                                else if(j != 0) {
+                                /*else if(j != 0) {
                                     // create the categories terms
                                     parentTerm = cell.toString();
                                     masternew.createTerm(strFrameworkId,strChannel,parentCategoryCode,parentTerm);
-                                }
+                                }*/
                             }
                             else if (sheetname.equalsIgnoreCase("associations")){
 
@@ -191,6 +191,8 @@ public class FWNewExcelReader {
                                 else if(j == 1){
                                     // get the parent term
                                     parentTerm=cell.toString();
+                                    // create the parent term
+                                    masternew.createTerm(strFrameworkId,strChannel,parentCategoryCode,parentTerm);
                                 }
                                 else {
                                     // Create the child term
