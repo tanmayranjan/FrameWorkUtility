@@ -118,7 +118,7 @@ public class FWNewExcelReader {
                                     }
                                     header = sheet.getRow(0).getCell(j);
                                     heading = header.toString().toLowerCase().replaceAll("\\s+","");
-                                    if(heading.equalsIgnoreCase("parentcategory")){
+                                    if(heading.equalsIgnoreCase("parentcategorycode")){
                                         if(cell.toString() != null){
                                             parentCategoryForAssociation = cell.toString();
 
@@ -154,7 +154,7 @@ public class FWNewExcelReader {
                                         }
 
                                     }
-                                    else if(heading.equalsIgnoreCase("associatedcategory")){
+                                    else if(heading.equalsIgnoreCase("associatedcategorycode")){
                                         categories.add(cell.toString());
                                     }
                                     else if(heading.equalsIgnoreCase("associatedterm")){
@@ -189,16 +189,18 @@ public class FWNewExcelReader {
                                     }
                                 }
                                 else if(j == 1){
-                                    // get the parent term
                                     parentTerm=cell.toString();
                                     // create the parent term
-                                    masternew.createTerm(strFrameworkId,strChannel,parentCategoryCode,parentTerm);
+                                    String parentTermResponse = masternew.createTerm(strFrameworkId,strChannel,parentCategoryCode,cell.toString(),"parent");
                                 }
-                                else {
+                                else if(cell.toString() != ""){
                                     // Create the child term
-                                    masternew.createTerm(strFrameworkId,strChannel,parentCategoryCode,cell.toString());
+                                  String childTermResponse =  masternew.createTerm(strFrameworkId,strChannel,parentCategoryCode,cell.toString(),"child");
                                     // Add the child term to list
-                                    childTerm.add(cell.toString());
+                                    if(childTermResponse.equalsIgnoreCase("successful")){
+                                        childTerm.add(cell.toString());
+
+                                    }
                                 }
                             }
 

@@ -1,5 +1,6 @@
 org\sunbird\FWNewExcelReader.class
 org\sunbird\IniFile.class
+org\sunbird\FWCreateExcel.class
 org\sunbird\FWNewMasterFile.class
 org\sunbird\FWMainFile.class
 org\sunbird\Postman.class

@@ -21,7 +21,9 @@ public class FWMainFile {
 		
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-            System.out.println("Enter 1 to create/update framework using excel \nEnter 2 to Publish an existing framework");
+           // System.out.println("Enter 1 to create/update framework using excel \nEnter 2 to Publish an existing framework \nEnter 3 to download excel");
+			 System.out.println("Enter 1 to create/update framework using excel \nEnter 2 to Publish an existing framework");
+
             int opt = Integer.parseInt(br.readLine());
             switch (opt) {
 				case 1:
@@ -75,6 +77,7 @@ public class FWMainFile {
 
 					FWNewMasterFile newmaster = new FWNewMasterFile(loadConfig);
 					newmaster.createFramework(xlsfile, strFrameworkName, strFrameworkId, strFrameworkDescr, strChannel);
+					newmaster.errorList();
 					System.out.println("Changes will be reflected when you publish this Framework \n Press 1 to publish this framework or Press any other key to continue");
 					int publishoption = Integer.parseInt(br.readLine());
 					if (publishoption == 1) {
@@ -108,7 +111,21 @@ public class FWMainFile {
                     	System.out.println("Framework published successfully");
 					}
 					}
+					else {
+						System.out.println("Framework id incorrect");
+					}
 					break;
+				/*case 3:
+					System.out.println("Enter framework code");
+					strFrameworkId = br.readLine();
+					if (strFrameworkId == null || strFrameworkId.isEmpty()) {
+						System.out.println("Framework Id is mandatory");
+						System.exit(0);
+					}
+					FWCreateExcel fwcreateExcelObj = new FWCreateExcel();
+					fwcreateExcelObj.createExcel(strFrameworkId);
+					break;
+				*/
 				default:
 					System.out.println("Enter valid option");
 			}
