@@ -21,8 +21,8 @@ public class FWMainFile {
 		
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-           // System.out.println("Enter 1 to create/update framework using excel \nEnter 2 to Publish an existing framework \nEnter 3 to download excel");
-			 System.out.println("Enter 1 to create/update framework using excel \nEnter 2 to Publish an existing framework");
+            System.out.println("Enter 1 to create/update framework using excel \nEnter 2 to Publish an existing framework \nEnter 3 to download excel");
+			// System.out.println("Enter 1 to create/update framework using excel \nEnter 2 to Publish an existing framework");
 
             int opt = Integer.parseInt(br.readLine());
             switch (opt) {
@@ -115,7 +115,7 @@ public class FWMainFile {
 						System.out.println("Framework id incorrect");
 					}
 					break;
-				/*case 3:
+				case 3:
 					System.out.println("Enter framework code");
 					strFrameworkId = br.readLine();
 					if (strFrameworkId == null || strFrameworkId.isEmpty()) {
@@ -125,7 +125,6 @@ public class FWMainFile {
 					FWCreateExcel fwcreateExcelObj = new FWCreateExcel();
 					fwcreateExcelObj.createExcel(strFrameworkId);
 					break;
-				*/
 				default:
 					System.out.println("Enter valid option");
 			}

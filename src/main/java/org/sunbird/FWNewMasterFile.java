@@ -268,6 +268,38 @@ public class FWNewMasterFile {
             return "";
         }
     }
+    public JSONObject readTerm(String strFrameworkId, String category, String Term, String action) {
+        try {
+            String strTermIdentifier = "";
+            JSONObject termDetails = new JSONObject();
+            strApiUrl = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_framework_category_term_read", "") + Term.toLowerCase().replaceAll("\\s+", "") + "?framework=" + strFrameworkId + "&category=" + category;
+            logger.finest("In Framework MasterFile read term--> " + Term + "Term read --> strApiUrl:: " + strApiUrl);
+            String strTermReadResponse = Postman.getDetails(logger, strApiUrl, strToken);
+            logger.finest("In Framework MasterFile read term--> " + Term + " Term read --> strTermReadResponse:: " + strTermReadResponse);
+            JSONObject getTermDtlsresponse = (JSONObject) parser.parse(strTermReadResponse);
+            JSONObject getTermDtlsparams = (JSONObject) getTermDtlsresponse.get("params");
+            String strTermDtlsGetStatus = getTermDtlsparams.get("status").toString();
+
+            if (strTermDtlsGetStatus.equals("successful")) {
+                JSONObject getTermDtlsResult = (JSONObject) getTermDtlsresponse.get("result");
+                JSONObject getTermDtls = (JSONObject) getTermDtlsResult.get("term");
+                if(action.equalsIgnoreCase("termdetails")){
+                     termDetails.put("children",(JSONArray)getTermDtls.get("children"));
+                    termDetails.put("associations",(JSONArray)getTermDtls.get("associations"));
+
+                }
+                return termDetails;
+            } else if (strTermDtlsGetStatus.equals("failed")) {
+                return null;
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("readTerm method --> Exception :" + e.getMessage());
+            return null;
+        }
+    }
 
     public void createAssociations(String strFrameworkId, String strChannel, String parentCategory, String parentTerm, ArrayList<Object> childTermDetails) {
         try {
