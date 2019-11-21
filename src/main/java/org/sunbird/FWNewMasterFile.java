@@ -288,6 +288,9 @@ public class FWNewMasterFile {
                     termDetails.put("associations",(JSONArray)getTermDtls.get("associations"));
 
                 }
+                if(action.equalsIgnoreCase("readchildterm")){
+                    return getTermDtls;
+                }
                 return termDetails;
             } else if (strTermDtlsGetStatus.equals("failed")) {
                 return null;
