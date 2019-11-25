@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 
 public class FWMainFile {
-	
+	static String xlsfile;
 	public static void main(String args[]) throws GeneralSecurityException, SecurityException, IOException
 	{
 		Path currentRelativePath = Paths.get("");
@@ -21,16 +21,17 @@ public class FWMainFile {
 		
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-            System.out.println("Enter 1 to create/update framework using excel \nEnter 2 to Publish an existing framework \nEnter 3 to download excel");
+            System.out.println("Enter 1 to create framework using excel\n Enter 2 to update framework using excel \nEnter 3 to Publish an existing framework \nEnter 4 to download excel");
 			// System.out.println("Enter 1 to create/update framework using excel \nEnter 2 to Publish an existing framework");
 
             int opt = Integer.parseInt(br.readLine());
             switch (opt) {
-				case 1:
+				case 2:
+            	case 1:
 					String strFrameworkDescr = "";
 					System.out.print("Enter Full Path of Excel file including name:: ");
 					//   String xlsfile = "D:\\TaxonomyFiles(copy)\\Taxonomy Files\\NCERTtestAditya.xlsx";
-					String xlsfile = br.readLine();
+					 xlsfile = br.readLine();
 					if (xlsfile == null || xlsfile.isEmpty()) {
 						System.out.println("Excel Input is mandatory");
 						System.exit(0);
@@ -76,8 +77,8 @@ public class FWMainFile {
 					IniFile loadConfig = new IniFile(strFilePath + "/configLive.ini");
 
 					FWNewMasterFile newmaster = new FWNewMasterFile(loadConfig);
-					newmaster.createFramework(xlsfile, strFrameworkName, strFrameworkId, strFrameworkDescr, strChannel);
-					newmaster.errorList();
+					newmaster.createFramework(xlsfile, strFrameworkName, strFrameworkId, strFrameworkDescr, strChannel,opt);
+					// newmaster.errorList();
 					System.out.println("Changes will be reflected when you publish this Framework \n Press 1 to publish this framework or Press any other key to continue");
 					int publishoption = Integer.parseInt(br.readLine());
 					if (publishoption == 1) {
@@ -88,7 +89,7 @@ public class FWMainFile {
 					}
 				//	newmaster.errorList();
 					break;
-				case 2 :
+				case 3 :
 					System.out.println("Enter framework id to publish ::");
 					 strFrameworkId = br.readLine();
 					if (strFrameworkId == null || strFrameworkId.isEmpty()) {
@@ -115,7 +116,7 @@ public class FWMainFile {
 						System.out.println("Framework id incorrect");
 					}
 					break;
-				case 3:
+				case 4:
 					System.out.println("Enter framework code");
 					strFrameworkId = br.readLine();
 					if (strFrameworkId == null || strFrameworkId.isEmpty()) {

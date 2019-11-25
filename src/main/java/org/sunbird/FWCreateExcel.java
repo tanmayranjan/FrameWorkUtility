@@ -74,7 +74,7 @@ public class FWCreateExcel {
                  categoryResponse = masterObj.readCategory(strFrameworkId,categoryCode);
                  if(categoryResponse.equalsIgnoreCase("successful")){
                     termList = masterObj.readCategory(strFrameworkId,categoryCode,"createExcel");
-                     data.put("1", new Object[]{"Category Code","Parent Term","Parent Code","Child Term-1 Name","Child Term-1 Code"});
+                     data.put("1", new Object[]{"Category Code","Parent Term Name","Parent Term Code","Child Term-1 Name","Child Term-1 Code"});
                      createRowsAndColumns(data,workbook.getSheetAt(i+2),"SheetHeading");
                      data.clear();
                      for(int j = 0 ; j < termList.size() ; j++){

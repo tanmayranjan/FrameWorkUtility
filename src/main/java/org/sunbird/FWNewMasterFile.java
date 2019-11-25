@@ -19,6 +19,7 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 public class FWNewMasterFile {
     IniFile configFile = null;
+    static String termCode="";
     Logger logger = null;
     String strToken = null, strApiUrl, strApiBody, strResponse = "";
     JSONParser parser = new JSONParser();
@@ -48,7 +49,7 @@ public class FWNewMasterFile {
         fh.setFormatter(formatter);
     }
 
-    public void createFramework(String strInputExcelFile, String strFrameworkName, String strFrameworkId, String strFrameworkDescr, String strChannel) {
+    public void createFramework(String strInputExcelFile, String strFrameworkName, String strFrameworkId, String strFrameworkDescr, String strChannel,int option) {
         try {
             JSONParser parser = new JSONParser();
 
@@ -68,6 +69,11 @@ public class FWNewMasterFile {
             JSONObject jsonFWDetails = null;
 
             if (strFWGetStatus.equalsIgnoreCase("failed")) {
+                if(option == 2){
+                    System.out.println("Framework not found");
+                    System.exit(0);
+
+                }
                 //create framework
                 strApiUrl = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_framework_create", "");
 
@@ -92,7 +98,13 @@ public class FWNewMasterFile {
                     File inputExcelFile = new File(strInputExcelFile);
                     FWNewExcelReader.readExcel(inputExcelFile, configFile, strChannel, strFWNodeId);
                 }
-            } else {
+            }
+            else {
+                if(option == 1){
+                    System.out.println("Framework Already Exists");
+                    System.exit(0);
+
+                }
                 JSONObject getFWresult = (JSONObject) getFWresponse.get("result");
                 JSONObject getFWframework = (JSONObject) getFWresult.get("framework");
                 Object frameworkname = (Object) getFWframework.get("name");
@@ -149,15 +161,22 @@ public class FWNewMasterFile {
         try {
             String translationvalue = null;
             String termResponse = "";
-            if (term != null && term != "") {
-                termResponse = readTerm(strFrameworkId, category, term);
+            if(termCode != ""){
+                termResponse = readTerm(strFrameworkId, category, termCode,1);
+                if(termResponse.equalsIgnoreCase("successful")){
+                    return "AlreadyCreated_";
+                }
+            }
+            if (term != null && term != "" && termCode == "") {
+               // termResponse = readTerm(strFrameworkId, category, term);
+                termCode = generateGUID();
             }
             String catgResponse = readCategory(strFrameworkId, category);
-            if (termResponse.equals("failed") && catgResponse.equalsIgnoreCase("successful")) {
+            if (!termCode.equals("") && catgResponse.equalsIgnoreCase("successful")) {
                 strApiUrl = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_framework_category_term_create", "") + "=" + strFrameworkId + "&category=" + category;
                 logger.finest("In Framework MasterFile -->  Term create --> strApiUrl:: " + strApiUrl);
                 strApiBody = "{\"request\": {\"term\": {\"name\": \"" + term + "\",\"translations\": null, \"description\": \"" + term + "\", " +
-                        "\"code\":\"" + term.toLowerCase().replaceAll("\\s+", "") + "\"}}}";
+                        "\"code\":\"" + termCode + "\"}}}";
                 logger.finest("In Framework MasterFile --> Term create - " + term + "- Term create --> strApiBody:: " + strApiBody);
                 strResponse = Postman.transceive(logger, strToken, "", strApiUrl, strApiBody, strChannel);
                 logger.finest("In Framework MasterFile --> Term create - " + term + " - Term create --> strResponse:: " + strResponse);
@@ -168,21 +187,22 @@ public class FWNewMasterFile {
                     errors.add("You tried to create the term " + term + " but got the following error :" + errormsg);
                     return "failed";
                 }
-                return "successful";
+                return "successful"+"_"+termCode;
             }
             else if (catgResponse.equalsIgnoreCase("failed")) {
 
                 errors.add("You tried to create the term " + term + " but it failed due to error in category " + category);
                 return "failed";
             }
-            else if(termResponse != "" && termType.equalsIgnoreCase("child")) {
-              String parentResponse =  checkParent(strFrameworkId,category,term);
+            else if(termCode != "" && termType.equalsIgnoreCase("child")) {
+              String parentResponse =  checkParent(strFrameworkId,category,termCode);
               if(parentResponse != "failed"){
                   errors.add("The term " + term + " already has a parent , please add a uniqure character to this term and then try again");
                   return "failed";
               }
             }
-            return "successful";
+
+            return "successful_"+termCode;
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("createTerm method --> Exception :" + e.getMessage());
@@ -194,8 +214,8 @@ public class FWNewMasterFile {
         try {
             String parentTermIdentifier = "";
             if (parentTerm != null) {
-                parentTerm = parentTerm.toLowerCase().replaceAll("\\s+", "");
-                parentTermIdentifier = readTerm(strFrameworkId, category, parentTerm);
+              //  parentTerm = parentTerm.toLowerCase().replaceAll("\\s+", "");
+                parentTermIdentifier = readTerm(strFrameworkId, category, parentTerm,2);
             }
             String childTermIdentifer = "";
             String strtermResponse;
@@ -209,8 +229,8 @@ public class FWNewMasterFile {
                 for (int i = 0; i < childTerm.size(); i++) {
                     if (childTerm.get(i) != null) {
                         String childTermCode = (childTerm.get(i)).toString();
-                        childTermCode = childTermCode.toLowerCase().replaceAll("\\s+", "");
-                        childTermIdentifer = readTerm(strFrameworkId, category, childTermCode);
+                    //    childTermCode = childTermCode.toLowerCase().replaceAll("\\s+", "");
+                        childTermIdentifer = readTerm(strFrameworkId, category, childTermCode,2);
                     }
                     //    flag =  validateParentChildRelation(strFrameworkId,category,parentTerm,childTermIdentifer);
                     if (!childTermIdentifer.equals("failed") && childTermIdentifer != "") {
@@ -243,10 +263,10 @@ public class FWNewMasterFile {
         }
     }
 
-    public String readTerm(String strFrameworkId, String category, String Term) {
+    public String readTerm(String strFrameworkId, String category, String Term,int action) {
         try {
             String strTermIdentifier = "";
-            strApiUrl = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_framework_category_term_read", "") + Term.toLowerCase().replaceAll("\\s+", "") + "?framework=" + strFrameworkId + "&category=" + category;
+            strApiUrl = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_framework_category_term_read", "") + Term + "?framework=" + strFrameworkId + "&category=" + category;
             logger.finest("In Framework MasterFile read term--> " + Term + "Term read --> strApiUrl:: " + strApiUrl);
             String strTermReadResponse = Postman.getDetails(logger, strApiUrl, strToken);
             logger.finest("In Framework MasterFile read term--> " + Term + " Term read --> strTermReadResponse:: " + strTermReadResponse);
@@ -255,10 +275,14 @@ public class FWNewMasterFile {
             String strTermDtlsGetStatus = getTermDtlsparams.get("status").toString();
 
             if (strTermDtlsGetStatus.equals("successful")) {
+                if(action == 1 ){
+                    return "successful";
+                }
                 JSONObject getTermDtlsResult = (JSONObject) getTermDtlsresponse.get("result");
                 JSONObject getTermDtls = (JSONObject) getTermDtlsResult.get("term");
                 strTermIdentifier = getTermDtls.get("identifier").toString();
                 return strTermIdentifier;
+
             } else if (strTermDtlsGetStatus.equals("failed")) {
                 return "failed";
             } else {
@@ -325,7 +349,7 @@ public class FWNewMasterFile {
                 for (int j = 0; j < catgList.size(); j++) {
                     catg = catgList.get(j);
                     term = termList.get(j);
-                    childTermIdentifier = readTerm(strFrameworkId, catg, term.toLowerCase().replaceAll("\\s+", ""));
+                    childTermIdentifier = readTerm(strFrameworkId, catg, term,2);
                     if (!childTermIdentifier.equals("failed") && childTermIdentifier != "") {
                         flag = true;
                         strApiBody = strApiBody + "{\"identifier\": \"" + childTermIdentifier + "\"},";

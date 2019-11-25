@@ -5,10 +5,13 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import sun.awt.FwDispatcher;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -20,13 +23,10 @@ public class FWNewExcelReader {
     public static void readExcel(File inputFile,IniFile configFile,String strChannel,String strFrameworkId) {
 
         String strFileExtn = inputFile.getName().substring(inputFile.getName().lastIndexOf(".")+1);
-        List lContentList = new ArrayList();
         JSONObject jo = new JSONObject();
-        int iHeaderLength = 0;
-        String ctcode;
         String temp="";
         String temp2="";
-        String parentCategory="";
+        String parentCategory="",parentTermResponse="",childTermResponse="",childTermResponseArray[],parentTermResponseArray[],parentTermCode="";
         String parentCategoryCode="";
         String parentCategoryName="";
         String parentCategoryForAssociation="";
@@ -59,6 +59,7 @@ public class FWNewExcelReader {
 
                     XSSFRow row;
                     XSSFCell cell;
+                    XSSFCell termCell;
                     XSSFCell tempName;
                     XSSFCell header;
                     List lContentDataList = null;
@@ -113,7 +114,10 @@ public class FWNewExcelReader {
                                     if(j == 0 && temp == ""){
                                         temp = cell.toString();
                                     }
-                                    if(j == 1 && temp2 == ""){
+                                    if(j==1){
+                                        continue;
+                                    }
+                                    if(j == 2 && temp2 == ""){
                                         temp2 =cell.toString();
                                     }
                                     header = sheet.getRow(0).getCell(j);
@@ -136,7 +140,7 @@ public class FWNewExcelReader {
                                             temp = parentCategoryForAssociation;
                                         }
                                     }
-                                    else if(heading.equalsIgnoreCase("parentterm")){
+                                    else if(heading.equalsIgnoreCase("parenttermcode")){
                                        if(cell.toString() != null){
                                            parentTermForAssociation = cell.toString();
                                        }
@@ -157,13 +161,14 @@ public class FWNewExcelReader {
                                     else if(heading.equalsIgnoreCase("associatedcategorycode")){
                                         categories.add(cell.toString());
                                     }
-                                    else if(heading.equalsIgnoreCase("associatedterm")){
+                                    else if(heading.equalsIgnoreCase("associatedtermcode")){
                                         terms.add(cell.toString());
                                     }
 
                                 }
                             }
                             else{
+                                FWNewMasterFile.termCode="";
                                 if(j == 0) {
                                     // get the category code
                                     if(cell.toString() != null){
@@ -177,24 +182,52 @@ public class FWNewExcelReader {
                                 else if(j == 1){
                                     parentTerm=cell.toString();
                                     // create the parent term
-                                    String parentTermResponse = masternew.createTerm(strFrameworkId,strChannel,parentCategoryCode,cell.toString(),"parent");
-                                }
-                                else if(cell.toString() != ""){
-                                    // Create the child term
-                                  String childTermResponse =  masternew.createTerm(strFrameworkId,strChannel,parentCategoryCode,cell.toString(),"child");
-                                    // Add the child term to list
-                                    if(childTermResponse.equalsIgnoreCase("successful")){
-                                        childTerm.add(cell.toString());
+                                    if(row.getCell(2) == null){
+                                        parentTermResponse = masternew.createTerm(strFrameworkId,strChannel,parentCategoryCode,parentTerm,"parent");
+                                    }
+                                    else{
+                                        FWNewMasterFile.termCode = (row.getCell(2)).toString();
+                                        parentTermResponse = masternew.createTerm(strFrameworkId,strChannel,parentCategoryCode,parentTerm,"parent");
 
                                     }
+                                    parentTermResponseArray =  parentTermResponse.split("_");
+                                    if(parentTermResponseArray[0].equalsIgnoreCase("successful")){
+                                        parentTermCode = parentTermResponseArray[1];
+                                        updateSheet(is,wb,iIndex,i,j,parentTerm,parentTermCode,numberofrows);
+                                    }
+                                    if(parentTermResponseArray[0].equalsIgnoreCase("alreadycreated")){
+                                        parentTermCode = FWNewMasterFile.termCode;
+                                    }
+                                }
+                                else if((j%2==1) && cell.toString() != ""){
+                                    if(!(row.getCell(j+1) == null)){
+                                        termCell = row.getCell(j+1);
+                                        FWNewMasterFile.termCode = termCell.toString();
+                                    }
+                                    childTermResponse =  masternew.createTerm(strFrameworkId,strChannel,parentCategoryCode,cell.toString(),"child");
+                                    childTermResponseArray = childTermResponse.split("_");
+                                    // Create the child term
+                                    // Add the child term to list
+                                    if(childTermResponseArray[0].equalsIgnoreCase("successful")){
+                                        updateSheet(is,wb,iIndex,i,j,cell.toString(),childTermResponseArray[1],numberofrows);
+
+                                        childTerm.add(childTermResponseArray[1]);
+
+                                    }
+                                }
+                                if(j == numberofColumns - 1){
+                                    FileOutputStream out = new FileOutputStream(new File(FWMainFile.xlsfile));
+                                    wb.write(out);
+                                    out.close();
                                 }
                             }
 
 
                         }
                         // Assign parent child relationship of terms
-                        if(childTerm.size() > 0){
-                            masternew.createParentChildRelation(strFrameworkId,strChannel,parentCategoryCode,parentTerm,childTerm);
+                        if(childTerm.size() > 0 && parentTermCode != ""){
+                            masternew.createParentChildRelation(strFrameworkId,strChannel,parentCategoryCode,parentTermCode,childTerm);
+                            parentTermCode = "";
                         }
 
 
@@ -220,5 +253,54 @@ public class FWNewExcelReader {
 
         //   return lContentList;
     }
+public static void updateSheet(InputStream file,XSSFWorkbook wb,int sheetIndex,int row,int column,String termName,String termCode,int numberofRows) throws Exception{
+        // term code in term list
+    XSSFCell cell;
+   setCell((wb.getSheetAt(sheetIndex)).getRow(row),column,termCode,"allterms");
+//if term is a child and exist as a parent also
+    for(int i=row+1 ;i < numberofRows ; i++){
+        cell= ((wb.getSheetAt(sheetIndex)).getRow(i)).getCell(1);
+        if(termName.equalsIgnoreCase(cell.toString())){
+            setCell((wb.getSheetAt(sheetIndex)).getRow(i),1,termCode,"childTerm");
 
+        }
+    }
+    // sheet of association if term is found
+setAssociationSheetCell(wb,termName,termCode);
+}
+public static void setCell(XSSFRow row,int index,String value,String action){
+        XSSFCell cell;
+    cell= (row).getCell(index+1);
+    if(cell == null){
+        if(action.equalsIgnoreCase("childTerm")){
+            index=1;
+        }
+        cell = (row).createCell(index+1);
+        cell.setCellValue(value);
+    }
+}
+public static void setAssociationSheetCell(XSSFWorkbook wb,String termName,String termCode) {
+
+    XSSFSheet sheet = wb.getSheet("Associations");
+    XSSFRow row;
+    XSSFCell cell;
+    int numberofrows = sheet.getPhysicalNumberOfRows();
+    for (int i = 1; i < numberofrows; i++) {
+        row = sheet.getRow(i);
+        if (row == null) {
+            //do something with an empty row
+            continue;
+        }
+        int numberofColumns = row.getLastCellNum();
+        for (int j = 1; j < numberofColumns; j++) {
+            if((j == 1 || j == 4)){
+                cell = row.getCell(j);
+                if(cell != null && cell.toString().equalsIgnoreCase(termName)){
+                    setCell(row,j,termCode,"setAssociation");
+
+                }
+            }
+        }
+    }
+        }
 }
