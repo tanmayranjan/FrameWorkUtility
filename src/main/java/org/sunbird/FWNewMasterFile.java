@@ -7,11 +7,13 @@ import org.json.simple.parser.JSONParser;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Random;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
@@ -525,5 +527,38 @@ public class FWNewMasterFile {
             System.err.println("checkparent method --> Exception :" + e.getMessage());
             return "failed";
         }
+    }
+    public String generateGUID(){
+        int n=40;
+        byte[] array = new byte[256];
+        new Random().nextBytes(array);
+
+        String randomString
+                = new String(array, Charset.forName("UTF-8"));
+
+        // Create a StringBuffer to store the result
+        StringBuffer r = new StringBuffer();
+
+        // remove all spacial char
+        String  AlphaNumericString
+                = randomString
+                .replaceAll("[^A-Za-z0-9]", "");
+
+
+        // from the generated random String into the result
+        for (int k = 0; k < AlphaNumericString.length(); k++) {
+
+            if (Character.isLetter(AlphaNumericString.charAt(k))
+                    && (n > 0)
+                    || Character.isDigit(AlphaNumericString.charAt(k))
+                    && (n > 0)) {
+
+                r.append(AlphaNumericString.charAt(k));
+                n--;
+            }
+        }
+
+        // return the resultant string
+        return r.toString();
     }
 }

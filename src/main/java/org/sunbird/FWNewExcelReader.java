@@ -160,21 +160,7 @@ public class FWNewExcelReader {
                                     else if(heading.equalsIgnoreCase("associatedterm")){
                                         terms.add(cell.toString());
                                     }
-                                 /*   header = sheet.getRow(0).getCell(j);
-                                    if(parentTerm != "" && parentCategory != ""){
-                                        // do association with parentTerm and parentCategory
-                                        jo.put("category",header.toString());
-                                        jo.put("term",cell.toString());
-                                        childTermForAssociation.add(jo);
-                                      }
-                                   if(parentTerm == ""){
-                                       parentTerm = cell.toString();
-                                   }
-                                    if(parentCategory == ""){
-                                        parentCategory = header.toString();
-                                    }
 
-                                 */
                                 }
                             }
                             else{
