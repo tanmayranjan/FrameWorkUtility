@@ -49,6 +49,10 @@ public class FWNewExcelReader {
                 XSSFWorkbook wb = new XSSFWorkbook(is);
 
                 int iNumOfSheets = wb.getNumberOfSheets();
+                wb.setSheetOrder("Categories",0);
+                if(wb.getSheet("Associations") != null || wb.getSheet("associations") != null){
+                    wb.setSheetOrder("Associations",iNumOfSheets-1);
+                }
 //				System.out.println("FWExcelSheets --> iNumOfSheets:: " + iNumOfSheets);
                 for(int iIndex=0; iIndex<iNumOfSheets; iIndex++)
                 {
