@@ -5,35 +5,23 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import sun.awt.FwDispatcher;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-public class FWNewExcelReader {
+public class FWNewExcelReaderWriter {
 
     static ArrayList<String> errorList = new ArrayList<>();
     public static void readExcel(File inputFile,IniFile configFile,String strChannel,String strFrameworkId) {
 
         String strFileExtn = inputFile.getName().substring(inputFile.getName().lastIndexOf(".")+1);
         JSONObject jo = new JSONObject();
-        String temp="";
-        String temp2="";
-        String parentCategory="",parentTermResponse="",childTermResponse="",childTermResponseArray[],parentTermResponseArray[],parentTermCode="";
-        String parentCategoryCode="";
-        String parentCategoryName="";
-        String parentCategoryForAssociation="";
-        String categoryDescription;
-        String parentTermForAssociation="";
-        String parentTerm="";
-        String heading;
+        String temp="",temp2 = "",parentCategory="",parentTermResponse="",childTermResponse="",parentTermCode="",parentCategoryCode="",parentCategoryName="",parentCategoryForAssociation="",parentTermForAssociation="",parentTerm="",heading;
+        String childTermResponseArray[],parentTermResponseArray[];
         ArrayList<String> childTerm = new ArrayList<String>();
         ArrayList<String> categories = new ArrayList<String>();
         ArrayList<String> terms = new ArrayList<String>();
@@ -53,11 +41,9 @@ public class FWNewExcelReader {
                 if(wb.getSheet("Associations") != null || wb.getSheet("associations") != null){
                     wb.setSheetOrder("Associations",iNumOfSheets-1);
                 }
-//				System.out.println("FWExcelSheets --> iNumOfSheets:: " + iNumOfSheets);
                 for(int iIndex=0; iIndex<iNumOfSheets; iIndex++)
                 {
                     int iRow=0;
-//					System.out.println("FWExcelSheets --> iIndex:: " + iIndex);
                     // Get first sheet from the workbook
                     XSSFSheet sheet = wb.getSheetAt(iIndex);
 
@@ -105,11 +91,6 @@ public class FWNewExcelReader {
 
 
                                 }
-                                /*else if(j != 0) {
-                                    // create the categories terms
-                                    parentTerm = cell.toString();
-                                    masternew.createTerm(strFrameworkId,strChannel,parentCategoryCode,parentTerm);
-                                }*/
                             }
                             else if (sheetname.equalsIgnoreCase("associations")){
 
@@ -175,7 +156,7 @@ public class FWNewExcelReader {
                                 FWNewMasterFile.termCode="";
                                 if(j == 0) {
                                     // get the category code
-                                    if(cell.toString() != null){
+                                    if(cell.toString() != null && cell.toString() != ""){
                                         parentCategoryCode = cell.toString();
                                     }
                                    // parentCategoryCode = sheetname;
@@ -257,11 +238,11 @@ public class FWNewExcelReader {
 
         //   return lContentList;
     }
+    // Update the sheet
 public static void updateSheet(InputStream file,XSSFWorkbook wb,int sheetIndex,int row,int column,String termName,String termCode,int numberofRows) throws Exception{
-        // term code in term list
     XSSFCell cell;
    setCell((wb.getSheetAt(sheetIndex)).getRow(row),column,termCode,"allterms");
-//if term is a child and exist as a parent also
+    //if term is a child and exist as a parent also
     for(int i=row+1 ;i < numberofRows ; i++){
         cell= ((wb.getSheetAt(sheetIndex)).getRow(i)).getCell(1);
         if(termName.equalsIgnoreCase(cell.toString())){
@@ -269,9 +250,10 @@ public static void updateSheet(InputStream file,XSSFWorkbook wb,int sheetIndex,i
 
         }
     }
-    // sheet of association if term is found
+    //create sheet of association if term is found
 setAssociationSheetCell(wb,termName,termCode);
 }
+// writing value in the cell of excel
 public static void setCell(XSSFRow row,int index,String value,String action){
         XSSFCell cell;
     cell= (row).getCell(index+1);

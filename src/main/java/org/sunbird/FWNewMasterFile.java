@@ -96,7 +96,7 @@ public class FWNewMasterFile {
                     String strFWNodeId = createFWresult.get("node_id").toString();
                     System.out.println("Created Framework id" + strFWNodeId);
                     File inputExcelFile = new File(strInputExcelFile);
-                    FWNewExcelReader.readExcel(inputExcelFile, configFile, strChannel, strFWNodeId);
+                    FWNewExcelReaderWriter.readExcel(inputExcelFile, configFile, strChannel, strFWNodeId);
                 }
             }
             else {
@@ -120,7 +120,7 @@ public class FWNewMasterFile {
                 }
 
                 File inputExcelFile = new File(strInputExcelFile);
-                FWNewExcelReader.readExcel(inputExcelFile, configFile, strChannel, strFrameworkId);
+                FWNewExcelReaderWriter.readExcel(inputExcelFile, configFile, strChannel, strFrameworkId);
 
             }
         } catch (Exception e) {
@@ -170,6 +170,7 @@ public class FWNewMasterFile {
             if (term != null && term != "" && termCode == "") {
                // termResponse = readTerm(strFrameworkId, category, term);
                 termCode = generateGUID();
+                termCode = termCode.toLowerCase();
             }
             String catgResponse = readCategory(strFrameworkId, category);
             if (!termCode.equals("") && catgResponse.equalsIgnoreCase("successful")) {
@@ -246,7 +247,7 @@ public class FWNewMasterFile {
 
                 // Updating Child Term
                     for (int i = 0; i < childTerm.size(); i++) {
-                        strApiUrl = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_framework_category_term_update", "") + childTerm.get(i).toLowerCase().replaceAll("\\s+", "") + "?framework=" + strFrameworkId + "&category=" + category;
+                        strApiUrl = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_framework_category_term_update", "") + childTerm.get(i) + "?framework=" + strFrameworkId + "&category=" + category;
                         logger.finest("In Framework MasterFile --> child Term relation->" + childTerm.get(i) + " --> strApiUrl:: " + strApiUrl);
                         strApiBody = "{\"request\": {\"term\": {\"parents\": [{\"identifier\": \"" + parentTermIdentifier + "\"}]}}}";
                         strtermResponse = Postman.patch(logger, strToken, "", strApiUrl, strApiBody, strChannel);
@@ -298,7 +299,7 @@ public class FWNewMasterFile {
         try {
             String strTermIdentifier = "";
             JSONObject termDetails = new JSONObject();
-            strApiUrl = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_framework_category_term_read", "") + Term.toLowerCase().replaceAll("\\s+", "") + "?framework=" + strFrameworkId + "&category=" + category;
+            strApiUrl = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_framework_category_term_read", "") + Term + "?framework=" + strFrameworkId + "&category=" + category;
             logger.finest("In Framework MasterFile read term--> " + Term + "Term read --> strApiUrl:: " + strApiUrl);
             String strTermReadResponse = Postman.getDetails(logger, strApiUrl, strToken);
             logger.finest("In Framework MasterFile read term--> " + Term + " Term read --> strTermReadResponse:: " + strTermReadResponse);
@@ -355,12 +356,7 @@ public class FWNewMasterFile {
                         strApiBody = strApiBody + "{\"identifier\": \"" + childTermIdentifier + "\"},";
                     }
                 }
-                // catg = (String)(jsonObject.get("category"));
-                // term = (String)jsonObject.get("term");
-           /* childTermIdentifier=readTerm(strFrameworkId,catg,term.toLowerCase().replaceAll("\\s+",""));
-            if(!childTermIdentifier.equals("failed") && childTermIdentifier != ""){
-                strApiBody = strApiBody + "{\"identifier\": \"" + childTermIdentifier+"\"},";
-            }*/
+
 
             }
             if (flag) {
@@ -373,7 +369,7 @@ public class FWNewMasterFile {
                 }
                 strApiBody = strApiBody + "}}}";
              //   System.out.println("Associations request body\n" + strApiBody);
-                strApiUrl = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_framework_category_term_update", "") + parentTerm.toLowerCase().replaceAll("\\s+", "") + "?framework=" + strFrameworkId + "&category=" + parentCategory;
+                strApiUrl = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_framework_category_term_update", "") + parentTerm + "?framework=" + strFrameworkId + "&category=" + parentCategory;
                 strtermResponse = Postman.patch(logger, strToken, "", strApiUrl, strApiBody, strChannel);
                 logger.finest("In Framework MasterFile Associations Term ->" + parentTerm + " --> :: " + strtermResponse);
             }
@@ -480,7 +476,7 @@ public class FWNewMasterFile {
     }
 
     public void errorList() {
-        if(FWNewExcelReader.errorList.size() > 0 || errors.size() > 0){
+        if(errors.size() > 0){
         System.out.println("Error list  :");
         /*for (int k = 0; k < FWNewExcelReader.errorList.size(); k++) {
             System.out.println(FWNewExcelReader.errorList.get(k));
@@ -528,7 +524,7 @@ public class FWNewMasterFile {
     public String checkParent(String strFrameworkId, String category, String Term) {
         try {
             JSONArray parents = new JSONArray();
-            strApiUrl = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_framework_category_term_read", "") + Term.toLowerCase().replaceAll("\\s+", "") + "?framework=" + strFrameworkId + "&category=" + category;
+            strApiUrl = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_framework_category_term_read", "") + Term + "?framework=" + strFrameworkId + "&category=" + category;
             logger.finest("In Framework MasterFile --> " + Term + "Term read --> strApiUrl:: " + strApiUrl);
             String strTermReadResponse = Postman.getDetails(logger, strApiUrl, strToken);
             logger.finest("In Framework MasterFile --> " + Term + " Term read --> strTermReadResponse:: " + strTermReadResponse);

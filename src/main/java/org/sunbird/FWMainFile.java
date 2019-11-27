@@ -18,12 +18,10 @@ public class FWMainFile {
 	{
 		Path currentRelativePath = Paths.get("");
 		String strFilePath = currentRelativePath.toAbsolutePath().toString();
-		
+		System.setProperty("file.encoding","UTF-8");
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-            System.out.println("Enter 1 to create framework using excel\n Enter 2 to update framework using excel \nEnter 3 to Publish an existing framework \nEnter 4 to download excel");
-			// System.out.println("Enter 1 to create/update framework using excel \nEnter 2 to Publish an existing framework");
-
+            System.out.println("Enter 1 to create framework using excel\nEnter 2 to update framework using excel \nEnter 3 to Publish an existing framework \nEnter 4 to download excel");
             int opt = Integer.parseInt(br.readLine());
             switch (opt) {
 				case 2:
@@ -78,7 +76,7 @@ public class FWMainFile {
 
 					FWNewMasterFile newmaster = new FWNewMasterFile(loadConfig);
 					newmaster.createFramework(xlsfile, strFrameworkName, strFrameworkId, strFrameworkDescr, strChannel,opt);
-					// newmaster.errorList();
+					 newmaster.errorList();
 					System.out.println("Changes will be reflected when you publish this Framework \n Press 1 to publish this framework or Press any other key to continue");
 					int publishoption = Integer.parseInt(br.readLine());
 					if (publishoption == 1) {
