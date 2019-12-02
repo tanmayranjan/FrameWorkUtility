@@ -14,7 +14,7 @@
         <jar.plugin.version>2.6</jar.plugin.version>
 
     </properties>
-    
+
     <name>Play 2.5 x with Maven</name>
 
     <dependencies>
@@ -52,12 +52,65 @@
             <artifactId>play-java_2.11</artifactId>
             <version>${play2.version}</version>
         </dependency>
-        
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.play</groupId>
+            <artifactId>play-test_2.11</artifactId>
+            <version>${play2.version}</version>
+            <scope>test</scope>
+        </dependency>
+       <!-- <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-module-junit4</artifactId>
+            <version>1.6.5</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-api-mockito</artifactId>
+            <version>1.6.5</version>
+            <scope>test</scope>
+        </dependency>-->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>3.17</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.json-simple</groupId>
+            <artifactId>json-simple</artifactId>
+            <version>1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.perf4j</groupId>
+            <artifactId>perf4j</artifactId>
+            <version>0.9.16</version>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+
     </dependencies>
 
     <build>
         <sourceDirectory>${project.basedir}/app</sourceDirectory>
-        <testSourceDirectory>${project.basedir}/test</testSourceDirectory>
+        <testResources>
+            <testResource>
+                <directory>${project.basedir}/test/resources</directory>
+            </testResource>
+        </testResources>
         <resources>
             <resource>
                 <directory>${project.basedir}/conf</directory>
@@ -75,7 +128,7 @@
                 <version>1.0.0-beta5</version>
                 <extensions>true</extensions>
                 <configuration>
-                    <!-- if using controllers without dependency injection; default value is "injected" 
+                    <!-- if using controllers without dependency injection; default value is "injected"
                     <routesGenerator>static</routesGenerator> -->
                     <mainLang>java</mainLang>
                 </configuration>
@@ -86,7 +139,7 @@
                 <artifactId>sbt-compiler-maven-plugin</artifactId>
                 <version>1.0.0-beta8</version>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -103,4 +156,4 @@
         </plugins>
     </build>
 </project>
-    
+
