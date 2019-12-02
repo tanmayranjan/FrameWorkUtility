@@ -89,7 +89,7 @@ public class FWCreateExcel {
    }
               }
            // Writing the excel
-            File newFile = new File("demo.csv");
+            File newFile = new File("demo.xlsx");
            FileOutputStream out = new FileOutputStream(newFile);
             workbook.write(out);
             Map<String,Object> fileCreated = new HashMap<>();
