@@ -50,7 +50,7 @@ public class FWNewMasterFile {
         fh.setFormatter(formatter);
     }
 
-    public void createFramework(String strInputExcelFile, String strFrameworkName, String strFrameworkId, String strFrameworkDescr, String strChannel,int option) {
+    public String createFramework(File inputExcelFile, String strFrameworkName, String strFrameworkId, String strFrameworkDescr, String strChannel,int option) {
         try {
             JSONParser parser = new JSONParser();
 
@@ -96,7 +96,7 @@ public class FWNewMasterFile {
                     JSONObject createFWresult = (JSONObject) createFWresponse.get("result");
                     String strFWNodeId = createFWresult.get("node_id").toString();
                     System.out.println("Created Framework id" + strFWNodeId);
-                    File inputExcelFile = new File(strInputExcelFile);
+                   // File inputExcelFile = new File(strInputExcelFile);
                     FWNewExcelReaderWriter.readExcel(inputExcelFile, configFile, strChannel, strFWNodeId);
                 }
             }
@@ -120,7 +120,7 @@ public class FWNewMasterFile {
                     System.out.println(strApiBody + "\n" + strResponse);
                 }
 
-                File inputExcelFile = new File(strInputExcelFile);
+            //    File inputExcelFile = new File(strInputExcelFile);
                 FWNewExcelReaderWriter.readExcel(inputExcelFile, configFile, strChannel, strFrameworkId);
 
             }
@@ -129,6 +129,7 @@ public class FWNewMasterFile {
             System.err.println("createFramework method --> Exception :" + e.getMessage());
             System.exit(1);
         }
+        return "ok";
     }
 
     public void createCategory(String strFrameworkId, String strChannel, String categoryCode, String categoryName) {

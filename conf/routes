@@ -14,4 +14,4 @@ POST    /downloadExcel              controllers.FrameworkController.createExcel
 
 POST    /framework/publish          controllers.FrameworkController.publishFramework
 
-# POST    /getFile                    controllers.FrameworkController.getFileData
+POST    /createOrUpdateFramework                    controllers.FrameworkController.createupdateoperation

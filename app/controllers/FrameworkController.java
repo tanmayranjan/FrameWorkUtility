@@ -1,15 +1,15 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.sunbird.FWCreateExcel;
 import org.sunbird.FWNewMasterFile;
 import org.sunbird.IniFile;
-import play.mvc.Controller;
-import play.mvc.Filter;
-import play.mvc.Result;
-import play.mvc.With;
+import play.mvc.*;
 import utils.ResponseHeaders;
 
-import java.io.File;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -33,8 +33,6 @@ CompletionStage<Result> response =
 return response;
     }
     public CompletionStage<Result> publishFramework() throws  Exception{
-        System.out.println(request());
-        System.out.println(request().body().asJson().toString());
         String strFrameworkId = request().body().asJson().get("framework").asText();
         String strChannel = request().body().asJson().get("channel").asText();
         IniFile loadConfig = new IniFile(strFilePath + "/configLive.ini");
@@ -46,8 +44,32 @@ return response;
                 CompletableFuture.completedFuture(result);
         return response;
     }
+    public CompletionStage<Result> createupdateoperation() throws  Exception{
+        int opt =1;
+        Http.MultipartFormData body = request().body().asMultipartFormData();
+        Http.MultipartFormData.FilePart<File> filePart = body.getFile("File");
+        File xlsfile = filePart.getFile();
+        // FileReader br = new FileReader(xlsfile);
+        String strFrameworkName =  (((String[]) (body.asFormUrlEncoded().get("fwName")))[0]);
+        String strFrameworkId = (((String[]) (body.asFormUrlEncoded().get("fwCode")))[0]);
+        String strFrameworkDescr = (((String[]) (body.asFormUrlEncoded().get("fwDescription")))[0]);
+        String action = (((String[]) (body.asFormUrlEncoded().get("action")))[0]);
 
-    /*public void getFileData(){
+        String strChannel = (((String[]) (body.asFormUrlEncoded().get("channel")))[0]);
+        IniFile loadConfig = new IniFile(strFilePath + "/configLive.ini");
+        if(action.equalsIgnoreCase("update")){
+            opt = 2;
+            }
+        else if(action.equalsIgnoreCase("create")){
+            opt = 1;
+        }
+        FWNewMasterFile fwNewMasterFile = new FWNewMasterFile(loadConfig);
+        String data =  fwNewMasterFile.createFramework(xlsfile, strFrameworkName, strFrameworkId, strFrameworkDescr, strChannel,opt);
 
-    }*/
+        Result result = ok(data);
+        CompletionStage<Result> response =
+                CompletableFuture.completedFuture(result);
+        return response;
+    }
+
 }

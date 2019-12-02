@@ -1,6 +1,7 @@
 package org.sunbird;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
@@ -28,16 +29,17 @@ public class FWMainFile {
             	case 1:
 					String strFrameworkDescr = "";
 					System.out.print("Enter Full Path of Excel file including name:: ");
-					//   String xlsfile = "D:\\TaxonomyFiles(copy)\\Taxonomy Files\\NCERTtestAditya.xlsx";
-					 xlsfile = br.readLine();
-					if (xlsfile == null || xlsfile.isEmpty()) {
+					   String xlsfiletemp = "D:\\demo.xlsx";
+				//	 xlsfile = br.readLine();
+					File xlsfile = new File(xlsfiletemp);
+					/*if (xlsfile == null || xlsfile.isEmpty()) {
 						System.out.println("Excel Input is mandatory");
 						System.exit(0);
 					}
 					if (!(xlsfile.contains(".xls") || xlsfile.contains(".xlsx"))) {
 						System.out.println("Invalid file format \n Please Upload only .xlsx or .xls files");
 						System.exit(0);
-					}
+					}*/
 
 					System.out.print("Enter Framework Name :: ");
 
