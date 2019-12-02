@@ -6,6 +6,8 @@ import org.sunbird.IniFile;
 import play.mvc.Controller;
 import play.mvc.Filter;
 import play.mvc.Result;
+import play.mvc.With;
+import utils.ResponseHeaders;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -13,7 +15,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-
+@With(ResponseHeaders.class)
 public class FrameworkController extends Controller {
     Path currentRelativePath = Paths.get("");
     String strFilePath = currentRelativePath.toAbsolutePath().toString();
