@@ -19,7 +19,7 @@ import java.util.concurrent.CompletionStage;
 public class FrameworkController extends Controller {
     Path currentRelativePath = Paths.get("");
     String strFilePath = currentRelativePath.toAbsolutePath().toString();
-
+    public static File xlsfile;
     public CompletionStage<Result> createExcel() throws  Exception{
        System.out.println(request());
         System.out.println(request().body().asJson().toString());
@@ -47,8 +47,15 @@ return response;
     public CompletionStage<Result> createupdateoperation() throws  Exception{
         int opt =1;
         Http.MultipartFormData body = request().body().asMultipartFormData();
+        System.out.println("Form body " + body);
         Http.MultipartFormData.FilePart<File> filePart = body.getFile("File");
-        File xlsfile = filePart.getFile();
+        String strFileExtn = (filePart.getFilename().substring(filePart.getFilename().lastIndexOf(".")+1));
+        if(!(strFileExtn.equalsIgnoreCase("xlsx") || strFileExtn.equalsIgnoreCase("xls")))
+        {
+            System.out.println("Incorrect file format");
+          System.exit(0);
+        }
+         xlsfile = filePart.getFile();
         // FileReader br = new FileReader(xlsfile);
         String strFrameworkName =  (((String[]) (body.asFormUrlEncoded().get("fwName")))[0]);
         String strFrameworkId = (((String[]) (body.asFormUrlEncoded().get("fwCode")))[0]);

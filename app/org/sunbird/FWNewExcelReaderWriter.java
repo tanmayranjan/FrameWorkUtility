@@ -1,6 +1,7 @@
 
 package org.sunbird;
 
+import controllers.FrameworkController;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -19,7 +20,8 @@ public class FWNewExcelReaderWriter {
     static ArrayList<String> errorList = new ArrayList<>();
     public static void readExcel(File inputFile,IniFile configFile,String strChannel,String strFrameworkId) {
 
-        String strFileExtn = inputFile.getName().substring(inputFile.getName().lastIndexOf(".")+1);
+      //  String strFileExtn = inputFile.getName().substring(inputFile.getName().lastIndexOf(".")+1);
+     //   String strFileExtn = "xlsx";
         JSONObject jo = new JSONObject();
         String temp="",temp2 = "",parentCategory="",parentTermResponse="",childTermResponse="",parentTermCode="",parentCategoryCode="",parentCategoryName="",parentCategoryForAssociation="",parentTermForAssociation="",parentTerm="",heading;
         String childTermResponseArray[],parentTermResponseArray[];
@@ -29,8 +31,7 @@ public class FWNewExcelReaderWriter {
         ArrayList<Object> childTermForAssociation = new ArrayList<Object>();
         try {
             FWNewMasterFile masternew = new FWNewMasterFile(configFile);
-            if(strFileExtn.equalsIgnoreCase("xlsx") || strFileExtn.equalsIgnoreCase("xls"))
-            {
+
 
                 InputStream is = new FileInputStream(inputFile);
 
@@ -202,7 +203,7 @@ public class FWNewExcelReaderWriter {
                                     }
                                 }
                                 if(j == numberofColumns - 1){
-                                    FileOutputStream out = new FileOutputStream(new File(FWMainFile.xlsfile));
+                                    FileOutputStream out = new FileOutputStream(FrameworkController.xlsfile);
                                     wb.write(out);
                                     out.close();
                                 }
@@ -227,8 +228,8 @@ public class FWNewExcelReaderWriter {
 
                     }
                 }
+                System.out.println("process completed");
 
-            }
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("FWExcel Reader --> Exception :" + e.getMessage());
