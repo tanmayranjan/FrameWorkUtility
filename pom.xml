@@ -106,11 +106,6 @@
 
     <build>
         <sourceDirectory>${project.basedir}/app</sourceDirectory>
-        <testResources>
-            <testResource>
-                <directory>${project.basedir}/test/resources</directory>
-            </testResource>
-        </testResources>
         <resources>
             <resource>
                 <directory>${project.basedir}/conf</directory>
