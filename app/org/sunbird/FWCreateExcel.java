@@ -89,6 +89,10 @@ public class FWCreateExcel {
    }
               }
            // Writing the excel
+            workbook.setSheetOrder("Categories",0);
+
+            workbook.setSheetOrder("Associations",workbook.getNumberOfSheets()-1);
+
             File newFile = new File("demo.xlsx");
            FileOutputStream out = new FileOutputStream(newFile);
             workbook.write(out);
