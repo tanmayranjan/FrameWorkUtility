@@ -18,7 +18,7 @@ import java.util.List;
 public class FWNewExcelReaderWriter {
 
     static ArrayList<String> errorList = new ArrayList<>();
-    public static void readExcel(File inputFile,IniFile configFile,String strChannel,String strFrameworkId) {
+    public static String readExcel(File inputFile,IniFile configFile,String strChannel,String strFrameworkId) {
 
       //  String strFileExtn = inputFile.getName().substring(inputFile.getName().lastIndexOf(".")+1);
      //   String strFileExtn = "xlsx";
@@ -229,16 +229,13 @@ public class FWNewExcelReaderWriter {
                     }
                 }
                 System.out.println("process completed");
-
+return "Success";
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("FWExcel Reader --> Exception :" + e.getMessage());
-            System.exit(1);
+            return "Failed";
         }
 
-//		System.out.println("FWExcel Reader --> lContentList.size:: " + lContentList.size());
-
-        //   return lContentList;
     }
     // Update the sheet
 public static void updateSheet(InputStream file,XSSFWorkbook wb,int sheetIndex,int row,int column,String termName,String termCode,int numberofRows) throws Exception{

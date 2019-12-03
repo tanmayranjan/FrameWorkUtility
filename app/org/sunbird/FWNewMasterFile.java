@@ -50,10 +50,16 @@ public class FWNewMasterFile {
         fh.setFormatter(formatter);
     }
 
-    public String createFramework(File inputExcelFile, String strFrameworkName, String strFrameworkId, String strFrameworkDescr, String strChannel,int option) {
+    public String createFramework(File inputExcelFile,String strFileExtn, String strFrameworkName, String strFrameworkId, String strFrameworkDescr, String strChannel,int option) {
         try {
             JSONParser parser = new JSONParser();
 
+            // Check for correct extension
+            if(!(strFileExtn.equalsIgnoreCase("xlsx") || strFileExtn.equalsIgnoreCase("xls")))
+            {
+                System.out.println("Incorrect file format");
+                System.exit(0);
+            }
             // Validate Channel
             String strGetChannelAPIURL = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_get_channel", "") + strChannel;
             String strGetChannelAPIResponse = Postman.getDetails(logger, strGetChannelAPIURL, strToken);
@@ -97,7 +103,8 @@ public class FWNewMasterFile {
                     String strFWNodeId = createFWresult.get("node_id").toString();
                     System.out.println("Created Framework id" + strFWNodeId);
                    // File inputExcelFile = new File(strInputExcelFile);
-                    FWNewExcelReaderWriter.readExcel(inputExcelFile, configFile, strChannel, strFWNodeId);
+                  String fwresponse =  FWNewExcelReaderWriter.readExcel(inputExcelFile, configFile, strChannel, strFWNodeId);
+                  return fwresponse;
                 }
             }
             else {
@@ -121,13 +128,14 @@ public class FWNewMasterFile {
                 }
 
             //    File inputExcelFile = new File(strInputExcelFile);
-                FWNewExcelReaderWriter.readExcel(inputExcelFile, configFile, strChannel, strFrameworkId);
-
+              String fwresponse =  FWNewExcelReaderWriter.readExcel(inputExcelFile, configFile, strChannel, strFrameworkId);
+              return fwresponse;
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
             System.err.println("createFramework method --> Exception :" + e.getMessage());
-            System.exit(1);
+            return "failed";
         }
         return "ok";
     }

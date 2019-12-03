@@ -33,7 +33,6 @@ CompletionStage<Result> response =
 return response;
     }
     public CompletionStage<Result> publishFramework() throws  Exception{
-        System.out.println("->>>> "+ request().body().asJson().toString());
         String strFrameworkId = request().body().asJson().get("framework").asText();
         String strChannel = request().body().asJson().get("channel").asText();
         IniFile loadConfig = new IniFile(strFilePath + "/configLive.ini");
@@ -50,13 +49,8 @@ return response;
         Http.MultipartFormData body = request().body().asMultipartFormData();
         Http.MultipartFormData.FilePart<File> filePart = body.getFile("File");
         String strFileExtn = (filePart.getFilename().substring(filePart.getFilename().lastIndexOf(".")+1));
-        if(!(strFileExtn.equalsIgnoreCase("xlsx") || strFileExtn.equalsIgnoreCase("xls")))
-        {
-            System.out.println("Incorrect file format");
-          System.exit(0);
-        }
+
          xlsfile = filePart.getFile();
-        // FileReader br = new FileReader(xlsfile);
         String strFrameworkName =  (((String[]) (body.asFormUrlEncoded().get("fwName")))[0]);
         String strFrameworkId = (((String[]) (body.asFormUrlEncoded().get("fwCode")))[0]);
         String strFrameworkDescr = (((String[]) (body.asFormUrlEncoded().get("fwDescription")))[0]);
@@ -71,7 +65,7 @@ return response;
             opt = 1;
         }
         FWNewMasterFile fwNewMasterFile = new FWNewMasterFile(loadConfig);
-        String data =  fwNewMasterFile.createFramework(xlsfile, strFrameworkName, strFrameworkId, strFrameworkDescr, strChannel,opt);
+        String data =  fwNewMasterFile.createFramework(xlsfile, strFileExtn,strFrameworkName, strFrameworkId, strFrameworkDescr, strChannel,opt);
 
         Result result = ok(data);
         CompletionStage<Result> response =
