@@ -33,6 +33,7 @@ CompletionStage<Result> response =
 return response;
     }
     public CompletionStage<Result> publishFramework() throws  Exception{
+        System.out.println("->>>> "+ request().body().asJson().toString());
         String strFrameworkId = request().body().asJson().get("framework").asText();
         String strChannel = request().body().asJson().get("channel").asText();
         IniFile loadConfig = new IniFile(strFilePath + "/configLive.ini");
@@ -47,7 +48,6 @@ return response;
     public CompletionStage<Result> createupdateoperation() throws  Exception{
         int opt =1;
         Http.MultipartFormData body = request().body().asMultipartFormData();
-        System.out.println("Form body " + body);
         Http.MultipartFormData.FilePart<File> filePart = body.getFile("File");
         String strFileExtn = (filePart.getFilename().substring(filePart.getFilename().lastIndexOf(".")+1));
         if(!(strFileExtn.equalsIgnoreCase("xlsx") || strFileExtn.equalsIgnoreCase("xls")))
