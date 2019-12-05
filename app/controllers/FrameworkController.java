@@ -1,17 +1,22 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import javassist.bytecode.Descriptor;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.sunbird.FWCreateExcel;
 import org.sunbird.FWNewMasterFile;
 import org.sunbird.IniFile;
 import play.mvc.*;
+import scala.util.parsing.json.JSON;
 import utils.ResponseHeaders;
 
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -114,6 +119,36 @@ public class FrameworkController extends Controller {
                data =  fwNewMasterFile.deleteTerm(strFrameworkId,category,term);
             }
             Result result = ok(data);
+            response = CompletableFuture.completedFuture(result);
+            return response;
+        }
+        catch (Exception e){
+            System.out.println(e);
+            return response;
+        }
+    }
+    public CompletionStage<Result> liveTerms(){
+        CompletionStage<Result> response = null;
+        JSONArray terms = null;
+        ArrayList<JsonNode> data = new ArrayList<>();
+        String status;
+        try{
+            IniFile loadConfig = new IniFile(strFilePath + "/configLive.ini");
+            FWNewMasterFile fwNewMasterFile = new FWNewMasterFile(loadConfig);
+            System.out.println(request());
+            int action = request().body().asJson().get("action").asInt();
+            Iterator<JsonNode> nodeIterator = request().body().asJson().get("terms").iterator();
+            while(nodeIterator.hasNext()) {
+                JsonNode node = nodeIterator.next();
+                String identifier = node.get("identifier").asText();
+                String[] tempArray = identifier.split("_");
+                status = fwNewMasterFile.readTerm(tempArray[0],tempArray[1],tempArray[2],action);
+                if(status.equalsIgnoreCase("Live")){
+                    data.add(node);
+                }
+            }
+            // System.out.println(data.toString());
+            Result result = ok(data.toString());
             response = CompletableFuture.completedFuture(result);
             return response;
         }

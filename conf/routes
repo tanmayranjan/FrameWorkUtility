@@ -17,3 +17,5 @@ POST    /framework/publish          controllers.FrameworkController.publishFrame
 POST    /createOrUpdateFramework                    controllers.FrameworkController.createupdateoperation
 
 POST    /deleteItem                 controllers.FrameworkController.deleteOperation
+
+POST    /getLiveTerms               controllers.FrameworkController.liveTerms

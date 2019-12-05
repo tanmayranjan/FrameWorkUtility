@@ -292,6 +292,10 @@ public class FWNewMasterFile {
                 }
                 JSONObject getTermDtlsResult = (JSONObject) getTermDtlsresponse.get("result");
                 JSONObject getTermDtls = (JSONObject) getTermDtlsResult.get("term");
+                if(action == 3){
+                    String currentStatus = getTermDtls.get("status").toString();
+                    return currentStatus;
+                }
                 strTermIdentifier = getTermDtls.get("identifier").toString();
                 return strTermIdentifier;
 
