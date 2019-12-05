@@ -15,3 +15,5 @@ POST    /downloadExcel              controllers.FrameworkController.createExcel
 POST    /framework/publish          controllers.FrameworkController.publishFramework
 
 POST    /createOrUpdateFramework                    controllers.FrameworkController.createupdateoperation
+
+POST    /deleteItem                 controllers.FrameworkController.deleteOperation

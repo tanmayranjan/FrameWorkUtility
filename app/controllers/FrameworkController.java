@@ -55,7 +55,7 @@ public class FrameworkController extends Controller {
         }
 
     }
-    public CompletionStage<Result> createupdateoperation() throws  Exception{
+    public CompletionStage<Result> createupdateoperation() {
         int opt =1;
         String strFrameworkDescr = "";
         CompletionStage<Result> response = null;
@@ -81,6 +81,34 @@ public class FrameworkController extends Controller {
             FWNewMasterFile fwNewMasterFile = new FWNewMasterFile(loadConfig);
             String data = fwNewMasterFile.createFramework(xlsfile, strFileExtn, strFrameworkName, strFrameworkId, strFrameworkDescr, strChannel, opt);
 
+            Result result = ok(data);
+            response = CompletableFuture.completedFuture(result);
+            return response;
+        }
+        catch (Exception e){
+            System.out.println(e);
+            return response;
+        }
+    }
+
+    public CompletionStage<Result> deleteOperation(){
+        CompletionStage<Result> response = null;
+        String term = "";
+        String data;
+        try{
+            IniFile loadConfig = new IniFile(strFilePath + "/configLive.ini");
+            FWNewMasterFile fwNewMasterFile = new FWNewMasterFile(loadConfig);
+            String type = request().body().asJson().get("type").asText();
+            String strFrameworkId = request().body().asJson().get("fwCode").asText();
+            String category = request().body().asJson().get("catgCode").asText();
+            if(request().body().asJson().get("termCode") != null){
+                 term = request().body().asJson().get("termCode").asText();
+            }
+            if(term == ""){
+                data = fwNewMasterFile.deleteCategory(strFrameworkId,category);
+            }else{
+               data =  fwNewMasterFile.deleteTerm(strFrameworkId,category,term);
+            }
             Result result = ok(data);
             response = CompletableFuture.completedFuture(result);
             return response;

@@ -4,6 +4,7 @@ package org.sunbird;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import scala.util.parsing.json.JSON;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +23,7 @@ public class FWNewMasterFile {
     IniFile configFile = null;
     static String termCode="";
     Logger logger = null;
-    String strToken = null, strApiUrl, strApiBody, strResponse = "";
+    String strToken = null, strApiUrl, strApiBody, strResponse = "",channelId="";
     JSONParser parser = new JSONParser();
     Object obj;
     JSONObject jsonObject;
@@ -33,7 +34,7 @@ public class FWNewMasterFile {
 
         strToken = configFile.getString("API", "api_token", "");
         strToken = strToken.replace("'", "");
-
+       channelId = configFile.getString("API","x_channel_id","");
         logger = Logger.getLogger("FrameworkCreationLog");
 
         FileHandler fh;
@@ -556,6 +557,36 @@ public class FWNewMasterFile {
             e.printStackTrace();
             System.err.println("checkparent method --> Exception :" + e.getMessage());
             return "failed";
+        }
+    }
+    public String deleteTerm(String strFrameworkId,String category,String term){
+        String strtermResponse="";
+        try{
+            strApiUrl = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_framework_category_term_update", "") + term + "?framework=" + strFrameworkId + "&category=" + category;
+            logger.finest("In Framework MasterFile --> delete Term ->" + term + " --> strApiUrl:: " + strApiUrl);
+            strApiBody = "{\"request\": {\"term\": {\"status\": \"Retired\" }}}";
+            strtermResponse = Postman.patch(logger, strToken, "", strApiUrl, strApiBody,channelId);
+            logger.finest("In Framework MasterFile delete Term ->" + term + " --> :: " + strtermResponse);
+            String status = (String) ((JSONObject)((JSONObject)parser.parse(strtermResponse)).get("params")).get("status");
+            return status;
+        }
+        catch (Exception e){
+            return "";
+        }
+    }
+    public String deleteCategory(String strFrameworkId,String category){
+        String strtermResponse="";
+        try{
+            strApiUrl = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_framework_category_update", "") + category + "?framework=" + strFrameworkId;
+            logger.finest("In Framework MasterFile --> delete category ->" + category + " --> strApiUrl:: " + strApiUrl);
+            strApiBody = "{\"request\": {\"category\": {\"status\": \"Retired\" }}}";
+            strtermResponse = Postman.patch(logger, strToken, "", strApiUrl, strApiBody,channelId);
+            logger.finest("In Framework MasterFile delete category ->" + category + " --> :: " + strtermResponse);
+            String status = (String) ((JSONObject)((JSONObject)parser.parse(strtermResponse)).get("params")).get("status");
+            return status;
+        }
+        catch (Exception e){
+            return "";
         }
     }
     public String generateGUID(){
