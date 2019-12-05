@@ -22,6 +22,7 @@ public class FrameworkController extends Controller {
     public static File xlsfile;
     public CompletionStage<Result> createExcel(){
         CompletionStage<Result> response = null;
+        System.out.println(request());
         try {
             String strFrameworkId = request().body().asJson().get("framework").asText();
             FWCreateExcel fwCreateExcel = new FWCreateExcel();
@@ -40,6 +41,7 @@ public class FrameworkController extends Controller {
     public CompletionStage<Result> publishFramework(){
         CompletionStage<Result> response = null;
         try {
+            System.out.println(request());
             String strFrameworkId = request().body().asJson().get("framework").asText();
             String strChannel = request().body().asJson().get("channel").asText();
             IniFile loadConfig = new IniFile(strFilePath + "/configLive.ini");
@@ -57,6 +59,7 @@ public class FrameworkController extends Controller {
     }
     public CompletionStage<Result> createupdateoperation() {
         int opt =1;
+        System.out.println(request());
         String strFrameworkDescr = "";
         CompletionStage<Result> response = null;
         try {
@@ -98,6 +101,7 @@ public class FrameworkController extends Controller {
         try{
             IniFile loadConfig = new IniFile(strFilePath + "/configLive.ini");
             FWNewMasterFile fwNewMasterFile = new FWNewMasterFile(loadConfig);
+            System.out.println(request());
             String type = request().body().asJson().get("type").asText();
             String strFrameworkId = request().body().asJson().get("fwCode").asText();
             String category = request().body().asJson().get("catgCode").asText();
