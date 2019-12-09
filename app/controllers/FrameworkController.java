@@ -48,10 +48,10 @@ public class FrameworkController extends Controller {
         try {
             System.out.println(request());
             String strFrameworkId = request().body().asJson().get("framework").asText();
-            String strChannel = request().body().asJson().get("channel").asText();
+          //  String strChannel = request().body().asJson().get("channel").asText();
             IniFile loadConfig = new IniFile(strFilePath + "/configLive.ini");
             FWNewMasterFile fwNewMasterFile = new FWNewMasterFile(loadConfig);
-            String data =  fwNewMasterFile.publishFramework(strFrameworkId,strChannel);
+            String data =  fwNewMasterFile.publishFramework(strFrameworkId);
             Result result = ok(data);
             response = CompletableFuture.completedFuture(result);
             return response;
@@ -79,7 +79,7 @@ public class FrameworkController extends Controller {
 
             }
             String action = (((String[]) (body.asFormUrlEncoded().get("action")))[0]);
-            String strChannel = (((String[]) (body.asFormUrlEncoded().get("channel")))[0]);
+           // String strChannel = (((String[]) (body.asFormUrlEncoded().get("channel")))[0]);
             IniFile loadConfig = new IniFile(strFilePath + "/configLive.ini");
             if (action.equalsIgnoreCase("update")) {
                 opt = 2;
@@ -87,7 +87,7 @@ public class FrameworkController extends Controller {
                 opt = 1;
             }
             FWNewMasterFile fwNewMasterFile = new FWNewMasterFile(loadConfig);
-            String data = fwNewMasterFile.createFramework(xlsfile, strFileExtn, strFrameworkName, strFrameworkId, strFrameworkDescr, strChannel, opt);
+            String data = fwNewMasterFile.createFramework(xlsfile, strFileExtn, strFrameworkName, strFrameworkId, strFrameworkDescr, opt);
 
             Result result = ok(data);
             response = CompletableFuture.completedFuture(result);

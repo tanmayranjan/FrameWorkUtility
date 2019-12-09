@@ -51,7 +51,8 @@ public class FWNewMasterFile {
         fh.setFormatter(formatter);
     }
 
-    public String createFramework(File inputExcelFile,String strFileExtn, String strFrameworkName, String strFrameworkId, String strFrameworkDescr, String strChannel,int option) {
+    public String createFramework(File inputExcelFile,String strFileExtn, String strFrameworkName, String strFrameworkId, String strFrameworkDescr,int option) {
+       String strChannel = channelId;
         try {
             JSONParser parser = new JSONParser();
 
@@ -468,12 +469,12 @@ public class FWNewMasterFile {
         }
     }
 
-    public String publishFramework(String strFrameworkId, String strChannel) {
+    public String publishFramework(String strFrameworkId) {
         try {
             strApiUrl = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_framework_publish", "") + strFrameworkId;
             logger.finest("Publishing Framework" + strFrameworkId + " " + strApiUrl);
             strApiBody = "{}";
-            strResponse = Postman.transceive(logger, strToken, "", strApiUrl, strApiBody, strChannel);
+            strResponse = Postman.transceive(logger, strToken, "", strApiUrl, strApiBody, channelId);
             JSONObject fwPublishResponse = (JSONObject) ((JSONObject) parser.parse(strResponse)).get("params");
             String status = (String) fwPublishResponse.get("status");
             if (status.equalsIgnoreCase("successful")) {
