@@ -229,11 +229,11 @@ public class FWNewExcelReaderWriter {
                     }
                 }
                 System.out.println("process completed");
-return "Success";
+return "successful";
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("FWExcel Reader --> Exception :" + e.getMessage());
-            return "Failed";
+            return "failed";
         }
 
     }

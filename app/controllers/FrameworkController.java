@@ -157,5 +157,26 @@ public class FrameworkController extends Controller {
             return response;
         }
     }
+    public CompletionStage<Result> setdefaultframework(){
+        CompletionStage<Result> response = null;
+        String status = "";
+        try{
+            IniFile loadConfig = new IniFile(strFilePath + "/configLive.ini");
+            FWNewMasterFile fwNewMasterFile = new FWNewMasterFile(loadConfig);
+            System.out.println(request());
+            String strFrameworkId = request().body().asJson().get("fwCode").asText();
+            String rootorgId = request().body().asJson().get("rootorgId").asText();
+
+            status = fwNewMasterFile.setDefaultFramework(strFrameworkId,rootorgId);
+            // System.out.println(data.toString());
+            Result result = ok(status);
+            response = CompletableFuture.completedFuture(result);
+            return response;
+        }
+        catch (Exception e){
+            System.out.println(e);
+            return response;
+        }
+    }
 
 }

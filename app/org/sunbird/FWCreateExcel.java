@@ -92,7 +92,7 @@ public class FWCreateExcel {
             workbook.setSheetOrder("Categories",0);
 
             workbook.setSheetOrder("Associations",workbook.getNumberOfSheets()-1);
-
+            checkIfRowIsEmpty(workbook.getSheet("Associations"));
             File newFile = new File("demo.xlsx");
            FileOutputStream out = new FileOutputStream(newFile);
             workbook.write(out);
@@ -261,5 +261,18 @@ public class FWCreateExcel {
               cellnumberForAssociation =3;
           }
     }
+    private void checkIfRowIsEmpty(XSSFSheet sheet) {
+        int totalRows = sheet.getPhysicalNumberOfRows();
+        for (int i = 1; i < totalRows; i++) {
+            sheet.getRow(i);
+            if (sheet.getRow(i) == null) {
+                sheet.removeRow(sheet.getRow(i));
+            }
+            else {
+                return;
+            }
+        }
+    }
+
 
 }

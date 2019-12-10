@@ -19,3 +19,5 @@ POST    /createOrUpdateFramework                    controllers.FrameworkControl
 POST    /deleteItem                 controllers.FrameworkController.deleteOperation
 
 POST    /getLiveTerms               controllers.FrameworkController.liveTerms
+
+POST    /setdefaultframework        controllers.FrameworkController.setdefaultframework

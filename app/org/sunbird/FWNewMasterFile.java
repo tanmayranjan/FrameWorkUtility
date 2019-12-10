@@ -6,6 +6,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import scala.util.parsing.json.JSON;
 
+import javax.security.sasl.SaslServer;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -592,6 +593,23 @@ public class FWNewMasterFile {
         }
         catch (Exception e){
             return "";
+        }
+    }
+    public String setDefaultFramework(String strFrameworkId,String rootOrgId){
+        String strtermResponse="";
+        try{
+            strApiUrl = configFile.getString("API","api_base_url","") + configFile.getString("API","api_update_channel","") + rootOrgId;
+            logger.finest("setting default framework of rootorgid " + rootOrgId +" ===> "+ strApiUrl);
+            strApiBody = "{\"request\": {\"channel\": {\"defaultFramework\": \"" + strFrameworkId + "\" , \"frameworks\": [{ \"identifier\" : \"" + strFrameworkId + "\" }]}}}";
+            strtermResponse = Postman.patch(logger, strToken, "", strApiUrl, strApiBody,channelId);
+            logger.finest("In Framework MasterFile set default framework ->" + rootOrgId + " --> :: " + strtermResponse);
+            String status = (String) ((JSONObject)((JSONObject)parser.parse(strtermResponse)).get("params")).get("status");
+            return status;
+
+        }
+        catch (Exception e){
+            System.out.println(e);
+            return "failed";
         }
     }
     public String generateGUID(){
