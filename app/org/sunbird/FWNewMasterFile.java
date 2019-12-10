@@ -40,7 +40,7 @@ public class FWNewMasterFile {
 
         FileHandler fh;
 
-        Path currentRelativePath = Paths.get("D:\\TaxonomyFiles(copy)\\Taxonomy Files\\logs\\log");
+        Path currentRelativePath = Paths.get("");
         String strFilePath = currentRelativePath.toAbsolutePath().toString();
 
         String dateInString = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss").format(new Date());
