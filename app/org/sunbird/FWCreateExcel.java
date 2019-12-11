@@ -41,7 +41,7 @@ public class FWCreateExcel {
      public Map<String, Object> createExcel(String strFrameworkId) throws Exception{
         // Create Categories sheet
         XSSFSheet sheet1 = workbook.createSheet("Categories");
-        associationData.put("1",new Object[]{"Parent Category Code","Parent Term Name","Parent Term Code","Associated Category Code","Associated Term Name","Associated Term Code"});
+        associationData.put("1",new Object[]{"Parent Category Code","Term Name","Term Code","Associated Category Code","Associated Term Name","Associated Term Code"});
        createRowsAndColumns(associationData,sheet2,"SheetHeading");
         associationData.clear();
         JSONObject categoryObj;

@@ -127,7 +127,7 @@ public class FWNewExcelReaderWriter {
                                             temp = parentCategoryForAssociation;
                                         }
                                     }
-                                    else if(heading.equalsIgnoreCase("parenttermcode")){
+                                    else if(heading.equalsIgnoreCase("termcode")){
                                        if(cell.toString() != null){
                                            parentTermForAssociation = cell.toString();
                                        }
