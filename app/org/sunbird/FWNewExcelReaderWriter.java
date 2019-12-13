@@ -229,10 +229,12 @@ public class FWNewExcelReaderWriter {
                     }
                 }
                 System.out.println("process completed");
+            FrameworkController.reqCompleted = "successful";
 return "successful";
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("FWExcel Reader --> Exception :" + e.getMessage());
+            FrameworkController.reqCompleted = "failed";
             return "failed";
         }
 

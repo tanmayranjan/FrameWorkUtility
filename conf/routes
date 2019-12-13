@@ -21,3 +21,5 @@ POST    /deleteItem                 controllers.FrameworkController.deleteOperat
 POST    /getLiveTerms               controllers.FrameworkController.liveTerms
 
 POST    /setdefaultframework        controllers.FrameworkController.setdefaultframework
+
+GET     /retrieveStatus             controllers.FrameworkController.getStatus

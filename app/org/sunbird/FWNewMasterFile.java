@@ -1,6 +1,7 @@
 
 package org.sunbird;
 
+import controllers.FrameworkController;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -16,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
@@ -61,6 +63,7 @@ public class FWNewMasterFile {
             if(!(strFileExtn.equalsIgnoreCase("xlsx") || strFileExtn.equalsIgnoreCase("xls")))
             {
                 System.out.println("Incorrect file format");
+                FrameworkController.reqCompleted = "failed";
                 System.exit(0);
             }
             // Validate Channel
@@ -72,6 +75,7 @@ public class FWNewMasterFile {
 
             if (strGetChannelStatus.equalsIgnoreCase("failed")) {
                 System.out.println("Channel not found");
+                FrameworkController.reqCompleted = "failed";
                 System.exit(0);
             }
             // Validate Framework
@@ -81,6 +85,7 @@ public class FWNewMasterFile {
             if (strFWGetStatus.equalsIgnoreCase("failed")) {
                 if(option == 2){
                     System.out.println("Framework not found");
+                    FrameworkController.reqCompleted = "failed";
                     System.exit(0);
 
                 }
@@ -106,13 +111,17 @@ public class FWNewMasterFile {
                     String strFWNodeId = createFWresult.get("node_id").toString();
                     System.out.println("Created Framework id" + strFWNodeId);
                    // File inputExcelFile = new File(strInputExcelFile);
-                  String fwresponse =  FWNewExcelReaderWriter.readExcel(inputExcelFile, configFile, strChannel, strFWNodeId);
-                  return fwresponse;
+                    CompletableFuture.runAsync( () -> {
+                         FWNewExcelReaderWriter.readExcel(inputExcelFile, configFile, strChannel, strFWNodeId);
+                    });
+                //  String fwresponse =  FWNewExcelReaderWriter.readExcel(inputExcelFile, configFile, strChannel, strFWNodeId);
+                  return "Started Successfully";
                 }
             }
             else {
                 if(option == 1){
                     System.out.println("Framework Already Exists");
+                    FrameworkController.reqCompleted = "failed";
                     System.exit(0);
 
                 }
@@ -131,8 +140,12 @@ public class FWNewMasterFile {
                 }
 
             //    File inputExcelFile = new File(strInputExcelFile);
-              String fwresponse =  FWNewExcelReaderWriter.readExcel(inputExcelFile, configFile, strChannel, strFrameworkId);
-              return fwresponse;
+                CompletableFuture.runAsync( () -> {
+                     FWNewExcelReaderWriter.readExcel(inputExcelFile, configFile, strChannel, strFrameworkId);
+
+                });
+             // String fwresponse =  FWNewExcelReaderWriter.readExcel(inputExcelFile, configFile, strChannel, strFrameworkId);
+              return "Started Successfully";
             }
         }
         catch (Exception e) {
@@ -169,14 +182,31 @@ public class FWNewMasterFile {
 
         }
     }
+public  void updateTermName(String strFrameworkId, String category, String term){
+   try {
+       strApiUrl = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_framework_category_term_update", "") + termCode + "?framework=" + strFrameworkId + "&category=" + category;
 
+       logger.finest("In Framework MasterFile -->  Term update->" + term + " --> strApiUrl:: " + strApiUrl);
+       strApiBody = "{\"request\": {\"term\": {\"name\": \"" + term + "\"}}}";
+       String strtermResponse = Postman.patch(logger, strToken, "", strApiUrl, strApiBody, channelId);
+       logger.finest("In Framework MasterFile  Term name update->" + term + " --> :: " + strtermResponse);
+   }
+   catch (Exception e){
+
+   }
+}
     public String createTerm(String strFrameworkId, String strChannel, String category, String term,String termType) {
         try {
             String translationvalue = null;
             String termResponse = "";
             if(termCode != ""){
                 termResponse = readTerm(strFrameworkId, category, termCode,1);
-                if(termResponse.equalsIgnoreCase("successful")){
+                String tempArray[] = termResponse.split("_");
+                if(tempArray[0].equalsIgnoreCase("successful")){
+                    if(!tempArray[1].equalsIgnoreCase(term)){
+                        // update term name
+                        updateTermName(strFrameworkId,category,term);
+                    }
                     return "AlreadyCreated_";
                 }
             }
@@ -289,11 +319,12 @@ public class FWNewMasterFile {
             String strTermDtlsGetStatus = getTermDtlsparams.get("status").toString();
 
             if (strTermDtlsGetStatus.equals("successful")) {
-                if(action == 1 ){
-                    return "successful";
-                }
                 JSONObject getTermDtlsResult = (JSONObject) getTermDtlsresponse.get("result");
                 JSONObject getTermDtls = (JSONObject) getTermDtlsResult.get("term");
+                if(action == 1 ){
+                    String originalTermName = getTermDtls.get("name").toString();
+                    return "successful_"+originalTermName;
+                }
                 if(action == 3){
                     String currentStatus = getTermDtls.get("status").toString();
                     return currentStatus;
