@@ -18,7 +18,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 public class FWCreateExcel {
-    static int rownumber = 1,cellnumber = 3,cellnumberForAssociation=3,counter = 1;
+    static int rownumber = 1,cellnumber = 3,cellnumberForAssociation=3;
+            public static int associationCounter = 1;
     int flag =1 ;
     ArrayList<Object> termList = new ArrayList<Object>();
     String termIdentifier,termName,termCode[],associatedTermCode,associatedTermIdentifier,associatedTermName,tempTermCode="",childtermIdentifier,childtermName,childtermCode[];
@@ -38,71 +39,78 @@ public class FWCreateExcel {
     XSSFSheet sheet2 = workbook.createSheet("Associations");
     public FWCreateExcel() throws  Exception{
     }
-     public Map<String, Object> createExcel(String strFrameworkId) throws Exception{
+     public Map<String, Object> createExcel(String strFrameworkId,String pid){
+        Report rep=new Report();
         // Create Categories sheet
-        XSSFSheet sheet1 = workbook.createSheet("Categories");
-        associationData.put("1",new Object[]{"Parent Category Code","Term Name","Term Code","Associated Category Code","Associated Term Name","Associated Term Code"});
-       createRowsAndColumns(associationData,sheet2,"SheetHeading");
-        associationData.clear();
-        JSONObject categoryObj;
-        String strFwStatus = masterObj.readFramework(strFrameworkId.toString());
-        if(strFwStatus.equalsIgnoreCase("successful")){
-            // List of Categories
-           JSONArray categoryList = masterObj.readFramework(strFrameworkId,"createExcel");
+         try {
+             XSSFSheet sheet1 = workbook.createSheet("Categories");
+             associationData.put("1", new Object[]{"Parent Category Code", "Term Name", "Term Code", "Associated Category Code", "Associated Term Name", "Associated Term Code"});
+             createRowsAndColumns(associationData, sheet2, "SheetHeading");
+             associationData.clear();
+             JSONObject categoryObj;
+             String strFwStatus = masterObj.readFramework(strFrameworkId.toString());
+             if (strFwStatus.equalsIgnoreCase("successful")) {
+                 // List of Categories
+                 JSONArray categoryList = masterObj.readFramework(strFrameworkId, "createExcel");
 
-            data.put("1", new Object[] {"Category Name", "Category Code"});
-           for(int i = 0 ; i < categoryList.size() ; i++)
-           {
-                categoryObj = (JSONObject) categoryList.get(i);
-                categoryIdentifier = ((categoryObj.get("identifier")).toString());
-                categoryName = ((categoryObj.get("name")).toString());
-                categoryCode = categoryIdentifier.substring(categoryIdentifier.indexOf('_')+ 1);
-               data.put(""+(i+2),new Object[]{categoryName,categoryCode});
-               JSONObject allCategories = new JSONObject();
-               allCategories.put("categoryCode",categoryCode);
-               allCategories.put("sheet", workbook.createSheet(categoryName));
-               allCategoriesArray.add(allCategories);
-           }
-           // Writing categories detail in its sheet
-            createRowsAndColumns(data,sheet1,"categories");
-            data.clear();
-          for(int i = 0 ; i < allCategoriesArray.size() ; i++ ){
-                  categoryCode = (((JSONObject)(allCategoriesArray.get(i))).get("categoryCode")).toString();
-                 categoryResponse = masterObj.readCategory(strFrameworkId,categoryCode);
-                 if(categoryResponse.equalsIgnoreCase("successful")){
-                     // Getting terms of the category selected
-                    termList = masterObj.readCategory(strFrameworkId,categoryCode,"createExcel");
-                     data.put("1", new Object[]{"Category Code","Parent Term Name","Parent Term Code","Child Term-1 Name","Child Term-1 Code"});
-                    // Creating heading for the sheet
-                     createRowsAndColumns(data,workbook.getSheetAt(i+2),"SheetHeading");
-                     data.clear();
-                     for(int j = 0 ; j < termList.size() ; j++){
-                         flag = 1;
-                         flag = writeParent(strFrameworkId,(JSONObject) termList.get(j),j,i);
-                         checkChild(strFrameworkId, j, i, termCode[2]);
-                         if(flag == 1) {
-                             rownumber++;
+                 data.put("1", new Object[]{"Category Name", "Category Code"});
+                 for (int i = 0; i < categoryList.size(); i++) {
+                     categoryObj = (JSONObject) categoryList.get(i);
+                     categoryIdentifier = ((categoryObj.get("identifier")).toString());
+                     categoryName = ((categoryObj.get("name")).toString());
+                     categoryCode = categoryIdentifier.substring(categoryIdentifier.indexOf('_') + 1);
+                     data.put("" + (i + 2), new Object[]{categoryName, categoryCode});
+                     JSONObject allCategories = new JSONObject();
+                     allCategories.put("categoryCode", categoryCode);
+                     allCategories.put("sheet", workbook.createSheet(categoryName));
+                     allCategoriesArray.add(allCategories);
+                 }
+                 // Writing categories detail in its sheet
+                 createRowsAndColumns(data, sheet1, "categories");
+                 data.clear();
+                 for (int i = 0; i < allCategoriesArray.size(); i++) {
+                     categoryCode = (((JSONObject) (allCategoriesArray.get(i))).get("categoryCode")).toString();
+                     categoryResponse = masterObj.readCategory(strFrameworkId, categoryCode);
+                     if (categoryResponse.equalsIgnoreCase("successful")) {
+                         // Getting terms of the category selected
+                         termList = masterObj.readCategory(strFrameworkId, categoryCode, "createExcel");
+                         data.put("1", new Object[]{"Category Code", "Parent Term Name", "Parent Term Code", "Child Term-1 Name", "Child Term-1 Code"});
+                         // Creating heading for the sheet
+                         createRowsAndColumns(data, workbook.getSheetAt(i + 2), "SheetHeading");
+                         data.clear();
+                         for (int j = 0; j < termList.size(); j++) {
+                             flag = 1;
+                             flag = writeParent(strFrameworkId, (JSONObject) termList.get(j), j, i);
+                             checkChild(strFrameworkId, j, i, termCode[2]);
+                             if (flag == 1) {
+                                 rownumber++;
+                             }
+
                          }
+                         rownumber = 1;
+                     }
+                 }
+                 // Writing the excel
+                 workbook.setSheetOrder("Categories", 0);
 
-                    }
-                     rownumber = 1;
-   }
-              }
-           // Writing the excel
-            workbook.setSheetOrder("Categories",0);
-
-            workbook.setSheetOrder("Associations",workbook.getNumberOfSheets()-1);
-            checkIfRowIsEmpty(workbook.getSheet("Associations"));
-            File newFile = new File("demo.xlsx");
-           FileOutputStream out = new FileOutputStream(newFile);
-            workbook.write(out);
-            Map<String,Object> fileCreated = new HashMap<>();
-            fileCreated.put("file",newFile);
-            out.close();
-
-            return fileCreated;
-        }
-        return null;
+                 workbook.setSheetOrder("Associations", workbook.getNumberOfSheets() - 1);
+               //  checkIfRowIsEmpty(workbook.getSheet("Associations"));
+                 File newFile = new File("demo.xlsx");
+                 FileOutputStream out = new FileOutputStream(newFile);
+                 workbook.write(out);
+                 Map<String, Object> fileCreated = new HashMap<>();
+                 fileCreated.put("file", newFile);
+                 out.close();
+                 rep.changeReport(pid,"Successfully downloaded","");
+                 return fileCreated;
+             }
+             return null;
+         }
+         catch (Exception e){
+             System.out.println("Throwing Exception in create excel() =>" + e);
+             rep.changeReport(pid,"failed","Exception occured");
+             return null;
+         }
     }
     // Assigning the cells of excel with values
     public void createRowsAndColumns(Map<String, Object[]> data,XSSFSheet sheet,String action){
@@ -113,7 +121,7 @@ public class FWCreateExcel {
                rownum = 0;
 
            } else if (action.equalsIgnoreCase("associations") || action.equalsIgnoreCase("ParentAssociation") || action.equalsIgnoreCase("createAssociation")) {
-               rownum = counter;
+               rownum = associationCounter;
            } else {
                rownum = rownumber;
            }
@@ -159,42 +167,48 @@ public class FWCreateExcel {
            }
        }
        catch (Exception e){
-
+         System.out.println("Exception in create excel createrowsandcolumns=>" + e);
        }
     }
     // Check for parent terms and write it in the excel
-    public int writeParent(String strFrameworkId,JSONObject termObj,int j,int i)throws Exception{
-        termName=(String)((termObj).get("name"));
-        termIdentifier=((JSONObject)termList.get(j)).get("identifier").toString();
-        termCode = termIdentifier.split("_");
-        JSONObject termdetails = getTermDetails(strFrameworkId,termCode[2]);
-        JSONArray children = (JSONArray)termdetails.get("children");
-        JSONArray parents = (JSONArray) termObj.get("parents");
-        if(j == 0){
-            data.put(""+(j+2),new Object[]{categoryCode,termName,termCode[2]});
-        }
-        else{
-            data.put(""+(j+2),new Object[]{"",termName,termCode[2]});
+    public int writeParent(String strFrameworkId,JSONObject termObj,int j,int i) {
+        try {
+            termName = (String) ((termObj).get("name"));
+            termIdentifier = ((JSONObject) termList.get(j)).get("identifier").toString();
+            termCode = termIdentifier.split("_");
+            JSONObject termdetails = getTermDetails(strFrameworkId, termCode[2]);
+            JSONArray children = (JSONArray) termdetails.get("children");
+            JSONArray parents = (JSONArray) termObj.get("parents");
+            if (j == 0) {
+                data.put("" + (j + 2), new Object[]{categoryCode, termName, termCode[2]});
+            } else {
+                data.put("" + (j + 2), new Object[]{"", termName, termCode[2]});
 
-        }
-         // First Level Parent term
-        if((children == null || children.size() == 0) && (parents == null || parents.size() == 0) ){
-            createRowsAndColumns(data,workbook.getSheetAt(i+2),"parentTerms");
+            }
+            // First Level Parent term
+            if ((children == null || children.size() == 0) && (parents == null || parents.size() == 0)) {
+                createRowsAndColumns(data, workbook.getSheetAt(i + 2), "parentTerms");
 
-        }
-        // Parent term which is also a child
-        else if(children != null && children.size() > 0){
-            createRowsAndColumns(data,workbook.getSheetAt(i+2),"parentTerms");
+            }
+            // Parent term which is also a child
+            else if (children != null && children.size() > 0) {
+                createRowsAndColumns(data, workbook.getSheetAt(i + 2), "parentTerms");
 
-        }
-        // Not a parent term
-        else{
+            }
+            // Not a parent term
+            else {
+                data.clear();
+                return 2;
+            }
+
             data.clear();
-            return 2;
+            return 1;
         }
+        catch (Exception e){
 
-        data.clear();
-        return 1;
+            System.out.println("Exception in create excel writeparent =>" + e);
+             return 3;
+        }
     }
     // Writing subterms
     public void writeChild(JSONArray children,int j,int i,String strFrameworkId) {
@@ -219,7 +233,9 @@ public class FWCreateExcel {
         childData.clear();
     }
     catch(Exception e){
-        }
+        System.out.println("Exception in create excel writeChild =>" + e);
+
+    }
     }
     // Returns the term details
     public JSONObject getTermDetails(String strFrameworkId,String termCode){
@@ -240,7 +256,7 @@ public class FWCreateExcel {
     public void checkAssociation(JSONObject termDetails){
         JSONArray association = (JSONArray)termDetails.get("associations");
         if(association != null && association.size() > 0 && tempTermCode != termCode[2]) {
-            associationData.put(""+(counter+1),new Object[]{categoryCode,termName,termCode[2]});
+            associationData.put(""+(associationCounter+1),new Object[]{categoryCode,termName,termCode[2]});
             createRowsAndColumns(associationData,sheet2,"ParentAssociation");
             associationData.clear();
             writeAssociation(association);
@@ -254,24 +270,12 @@ public class FWCreateExcel {
              associatedCategory = associatedTermIdentifier.split("_")[1];
              associatedTermCode = associatedTermIdentifier.split("_")[2];
               associatedTermName = (((JSONObject)association.get(k)).get("name")).toString();
-              associationData.put(""+(counter+1),new Object[]{associatedCategory,associatedTermName,associatedTermCode});
+              associationData.put(""+(associationCounter+1),new Object[]{associatedCategory,associatedTermName,associatedTermCode});
               createRowsAndColumns(associationData,sheet2,"createAssociation");
               associationData.clear();
-              counter++;
+              associationCounter++;
               cellnumberForAssociation =3;
           }
-    }
-    private void checkIfRowIsEmpty(XSSFSheet sheet) {
-        int totalRows = sheet.getPhysicalNumberOfRows();
-        for (int i = 1; i < totalRows; i++) {
-            sheet.getRow(i);
-            if (sheet.getRow(i) == null) {
-                sheet.removeRow(sheet.getRow(i));
-            }
-            else {
-                return;
-            }
-        }
     }
 
 

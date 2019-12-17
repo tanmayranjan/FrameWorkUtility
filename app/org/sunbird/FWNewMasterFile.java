@@ -1,6 +1,7 @@
 
 package org.sunbird;
 
+import com.sun.org.apache.regexp.internal.RE;
 import controllers.FrameworkController;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -54,8 +55,9 @@ public class FWNewMasterFile {
         fh.setFormatter(formatter);
     }
 
-    public String createFramework(File inputExcelFile,String strFileExtn, String strFrameworkName, String strFrameworkId, String strFrameworkDescr,int option) {
+    public String createFramework(String Pid,File inputExcelFile,String strFileExtn, String strFrameworkName, String strFrameworkId, String strFrameworkDescr,int option) {
        String strChannel = channelId;
+        Report rep = new Report();
         try {
             JSONParser parser = new JSONParser();
 
@@ -63,8 +65,9 @@ public class FWNewMasterFile {
             if(!(strFileExtn.equalsIgnoreCase("xlsx") || strFileExtn.equalsIgnoreCase("xls")))
             {
                 System.out.println("Incorrect file format");
-                FrameworkController.reqCompleted = "failed";
-                System.exit(0);
+                FrameworkController.req.put(strFrameworkId,"failed");
+                rep.changeReport(Pid,"failed","Excel file format is incorrect");
+                return "failed";
             }
             // Validate Channel
             String strGetChannelAPIURL = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_get_channel", "") + strChannel;
@@ -75,8 +78,9 @@ public class FWNewMasterFile {
 
             if (strGetChannelStatus.equalsIgnoreCase("failed")) {
                 System.out.println("Channel not found");
-                FrameworkController.reqCompleted = "failed";
-                System.exit(0);
+                FrameworkController.req.put(strFrameworkId,"failed");
+                rep.changeReport(Pid,"failed","Channel not found");
+                return "failed";
             }
             // Validate Framework
             String strFWGetStatus = readFramework(strFrameworkId);
@@ -85,8 +89,9 @@ public class FWNewMasterFile {
             if (strFWGetStatus.equalsIgnoreCase("failed")) {
                 if(option == 2){
                     System.out.println("Framework not found");
-                    FrameworkController.reqCompleted = "failed";
-                    System.exit(0);
+                    FrameworkController.req.put(strFrameworkId,"failed");
+                    rep.changeReport(Pid,"failed","Framework doesn't exist");
+                    return "failed";
 
                 }
                 //create framework
@@ -112,7 +117,7 @@ public class FWNewMasterFile {
                     System.out.println("Created Framework id" + strFWNodeId);
                    // File inputExcelFile = new File(strInputExcelFile);
                     CompletableFuture.runAsync( () -> {
-                         FWNewExcelReaderWriter.readExcel(inputExcelFile, configFile, strChannel, strFWNodeId);
+                         FWNewExcelReaderWriter.readExcel(Pid,inputExcelFile, configFile, strChannel, strFWNodeId);
                     });
                 //  String fwresponse =  FWNewExcelReaderWriter.readExcel(inputExcelFile, configFile, strChannel, strFWNodeId);
                   return "Started Successfully";
@@ -121,8 +126,9 @@ public class FWNewMasterFile {
             else {
                 if(option == 1){
                     System.out.println("Framework Already Exists");
-                    FrameworkController.reqCompleted = "failed";
-                    System.exit(0);
+                    FrameworkController.req.put(strFrameworkId,"failed");
+                    rep.changeReport(Pid,"failed","Framework Already Exists");
+                    return "failed";
 
                 }
                 JSONObject getFWresult = (JSONObject) getFWresponse.get("result");
@@ -141,7 +147,7 @@ public class FWNewMasterFile {
 
             //    File inputExcelFile = new File(strInputExcelFile);
                 CompletableFuture.runAsync( () -> {
-                     FWNewExcelReaderWriter.readExcel(inputExcelFile, configFile, strChannel, strFrameworkId);
+                     FWNewExcelReaderWriter.readExcel(Pid,inputExcelFile, configFile, strChannel, strFrameworkId);
 
                 });
              // String fwresponse =  FWNewExcelReaderWriter.readExcel(inputExcelFile, configFile, strChannel, strFrameworkId);
@@ -151,6 +157,7 @@ public class FWNewMasterFile {
         catch (Exception e) {
             e.printStackTrace();
             System.err.println("createFramework method --> Exception :" + e.getMessage());
+            rep.changeReport(Pid,"failed","Exception occured");
             return "failed";
         }
         return "ok";
@@ -501,7 +508,8 @@ public  void updateTermName(String strFrameworkId, String category, String term)
         }
     }
 
-    public String publishFramework(String strFrameworkId) {
+    public String publishFramework(String strFrameworkId,String pid) {
+        Report rep=new Report();
         try {
             strApiUrl = configFile.getString("API", "api_base_url", "") + configFile.getString("API", "api_framework_publish", "") + strFrameworkId;
             logger.finest("Publishing Framework" + strFrameworkId + " " + strApiUrl);
@@ -510,14 +518,17 @@ public  void updateTermName(String strFrameworkId, String category, String term)
             JSONObject fwPublishResponse = (JSONObject) ((JSONObject) parser.parse(strResponse)).get("params");
             String status = (String) fwPublishResponse.get("status");
             if (status.equalsIgnoreCase("successful")) {
+                rep.changeReport(pid,"successful","");
                 return "successful";
             } else {
                 errors.add("You tried to published the framework " + strFrameworkId + "but got the following error : " + (String) fwPublishResponse.get("errmsg"));
+                rep.changeReport(pid,"failed",(String)fwPublishResponse.get("errmsg"));
                 return "failed";
             }
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("publishFramework method --> Exception :" + e.getMessage());
+            rep.changeReport(pid,"failed","Exception occured");
             return "failed";
 
         }
@@ -626,8 +637,9 @@ public  void updateTermName(String strFrameworkId, String category, String term)
             return "";
         }
     }
-    public String setDefaultFramework(String strFrameworkId,String rootOrgId){
+    public String setDefaultFramework(String strFrameworkId,String rootOrgId,String pid){
         String strtermResponse="";
+        Report rep=new Report();
         try{
             strApiUrl = configFile.getString("API","api_base_url","") + configFile.getString("API","api_update_channel","") + rootOrgId;
             logger.finest("setting default framework of rootorgid " + rootOrgId +" ===> "+ strApiUrl);
@@ -635,15 +647,18 @@ public  void updateTermName(String strFrameworkId, String category, String term)
             strtermResponse = Postman.patch(logger, strToken, "", strApiUrl, strApiBody,channelId);
             logger.finest("In Framework MasterFile set default framework ->" + rootOrgId + " --> :: " + strtermResponse);
             String status = (String) ((JSONObject)((JSONObject)parser.parse(strtermResponse)).get("params")).get("status");
+            String errmsg = (String) ((JSONObject)((JSONObject)parser.parse(strtermResponse)).get("params")).get("errmsg");
+            rep.changeReport(pid,status,errmsg);
             return status;
 
         }
         catch (Exception e){
             System.out.println(e);
+            rep.changeReport(pid,"failed","Exception occured");
             return "failed";
         }
     }
-    public String generateGUID(){
+    public static String generateGUID(){
         int n=40;
         byte[] array = new byte[256];
         new Random().nextBytes(array);

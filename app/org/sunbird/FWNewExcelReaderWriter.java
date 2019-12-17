@@ -18,10 +18,8 @@ import java.util.List;
 public class FWNewExcelReaderWriter {
 
     static ArrayList<String> errorList = new ArrayList<>();
-    public static String readExcel(File inputFile,IniFile configFile,String strChannel,String strFrameworkId) {
-
-      //  String strFileExtn = inputFile.getName().substring(inputFile.getName().lastIndexOf(".")+1);
-     //   String strFileExtn = "xlsx";
+    public static String readExcel(String Pid,File inputFile,IniFile configFile,String strChannel,String strFrameworkId) {
+        Report rep = new Report();
         JSONObject jo = new JSONObject();
         String temp="",temp2 = "",parentCategory="",parentTermResponse="",childTermResponse="",parentTermCode="",parentCategoryCode="",parentCategoryName="",parentCategoryForAssociation="",parentTermForAssociation="",parentTerm="",heading;
         String childTermResponseArray[],parentTermResponseArray[];
@@ -196,6 +194,7 @@ public class FWNewExcelReaderWriter {
                                     // Create the child term
                                     // Add the child term to list
                                     if(childTermResponseArray[0].equalsIgnoreCase("successful")){
+
                                         updateSheet(is,wb,iIndex,i,j,cell.toString(),childTermResponseArray[1],numberofrows);
 
                                         childTerm.add(childTermResponseArray[1]);
@@ -229,12 +228,14 @@ public class FWNewExcelReaderWriter {
                     }
                 }
                 System.out.println("process completed");
-            FrameworkController.reqCompleted = "successful";
-return "successful";
+            FrameworkController.req.put(strFrameworkId,"successful");
+            rep.changeReport(Pid,"successful","");
+            return "successful";
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("FWExcel Reader --> Exception :" + e.getMessage());
-            FrameworkController.reqCompleted = "failed";
+            FrameworkController.req.put(strFrameworkId,"failed");
+            rep.changeReport(Pid,"failed","Exception occured");
             return "failed";
         }
 

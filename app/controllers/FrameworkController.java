@@ -5,9 +5,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import javassist.bytecode.Descriptor;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.sunbird.FWCreateExcel;
-import org.sunbird.FWNewMasterFile;
-import org.sunbird.IniFile;
+import org.sunbird.*;
 import play.mvc.*;
 import scala.util.parsing.json.JSON;
 import utils.ResponseHeaders;
@@ -17,6 +15,7 @@ import java.net.Socket;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -26,40 +25,52 @@ public class FrameworkController extends Controller {
     Path currentRelativePath = Paths.get("");
     String strFilePath = currentRelativePath.toAbsolutePath().toString();
     public static File xlsfile;
-    public static String reqCompleted = "false";
-
+public  static  JSONObject req = new JSONObject();
     public CompletionStage<Result> createExcel() {
         CompletionStage<Result> response = null;
         System.out.println(request());
+        Report rep = new Report();
+        FWCreateExcel.associationCounter = 1;
         try {
             String strFrameworkId = request().body().asJson().get("framework").asText();
+            String processId = request().body().asJson().get("pid").asText();
             FWCreateExcel fwCreateExcel = new FWCreateExcel();
-            Map<String, Object> res = fwCreateExcel.createExcel(strFrameworkId);
-            File data = ((File) res.get("file"));
-            Result result = ok(data);
-            response =
-                    CompletableFuture.completedFuture(result);
-            return response;
+            rep.createReport(strFrameworkId,"Downloading Excel",processId);
+            Map<String, Object> res = fwCreateExcel.createExcel(strFrameworkId,processId);
+            if(res != null) {
+                File data = ((File) res.get("file"));
+                Result result = ok(data);
+                response =
+                        CompletableFuture.completedFuture(result);
+                return response;
+            }
+            else{
+                System.out.println("inside else");
+                throw new NullPointerException();
+            }
         } catch (Exception e) {
-            System.out.println(e);
+            System.out.println("FrameworkController -> " + e);
             return response;
         }
     }
 
     public CompletionStage<Result> publishFramework() {
         CompletionStage<Result> response = null;
+        Report rep=new Report();
         try {
             System.out.println(request());
             String strFrameworkId = request().body().asJson().get("framework").asText();
+            String processId = request().body().asJson().get("pid").asText();
             //  String strChannel = request().body().asJson().get("channel").asText();
             IniFile loadConfig = new IniFile(strFilePath + "/configLive.ini");
             FWNewMasterFile fwNewMasterFile = new FWNewMasterFile(loadConfig);
-            String data = fwNewMasterFile.publishFramework(strFrameworkId);
+            rep.createReport(strFrameworkId,"Publish Framework",processId);
+            String data = fwNewMasterFile.publishFramework(strFrameworkId,processId);
             Result result = ok(data);
             response = CompletableFuture.completedFuture(result);
             return response;
         } catch (Exception e) {
-            System.out.println(e);
+            System.out.println("FrameworkController -> " + e);
             return response;
         }
 
@@ -71,13 +82,14 @@ public class FrameworkController extends Controller {
         String strFrameworkDescr = "";
         CompletionStage<Result> response = null;
         try {
-            final Socket socket;
             Http.MultipartFormData body = request().body().asMultipartFormData();
             Http.MultipartFormData.FilePart<File> filePart = body.getFile("File");
             String strFileExtn = (filePart.getFilename().substring(filePart.getFilename().lastIndexOf(".") + 1));
             xlsfile = filePart.getFile();
             String strFrameworkName = (((String[]) (body.asFormUrlEncoded().get("fwName")))[0]);
             String strFrameworkId = (((String[]) (body.asFormUrlEncoded().get("fwCode")))[0]);
+            String processId = (((String[]) (body.asFormUrlEncoded().get("pid")))[0]);
+
             if (body.asFormUrlEncoded().get("fwDescription") != null) {
                 strFrameworkDescr = (((String[]) (body.asFormUrlEncoded().get("fwDescription")))[0]);
 
@@ -91,14 +103,16 @@ public class FrameworkController extends Controller {
                 opt = 1;
             }
             FWNewMasterFile fwNewMasterFile = new FWNewMasterFile(loadConfig);
-            reqCompleted = "false";
-            String data = fwNewMasterFile.createFramework(xlsfile, strFileExtn, strFrameworkName, strFrameworkId, strFrameworkDescr, opt);
+            req.put(strFrameworkId,"false");
+            Report rep = new Report();
+            rep.createReport(strFrameworkId,action,processId);
+            String data = fwNewMasterFile.createFramework(processId,xlsfile, strFileExtn, strFrameworkName, strFrameworkId, strFrameworkDescr, opt);
 
             Result result = ok(data);
             response = CompletableFuture.completedFuture(result);
             return response;
         } catch (Exception e) {
-            System.out.println(e);
+            System.out.println("FrameworkController -> " + e);
             return response;
         }
     }
@@ -126,7 +140,7 @@ public class FrameworkController extends Controller {
             response = CompletableFuture.completedFuture(result);
             return response;
         } catch (Exception e) {
-            System.out.println(e);
+            System.out.println("FrameworkController -> " + e);
             return response;
         }
     }
@@ -156,7 +170,7 @@ public class FrameworkController extends Controller {
             response = CompletableFuture.completedFuture(result);
             return response;
         } catch (Exception e) {
-            System.out.println(e);
+            System.out.println("FrameworkController -> " + e);
             return response;
         }
     }
@@ -164,20 +178,22 @@ public class FrameworkController extends Controller {
     public CompletionStage<Result> setdefaultframework() {
         CompletionStage<Result> response = null;
         String status = "";
+        Report rep=new Report();
         try {
             IniFile loadConfig = new IniFile(strFilePath + "/configLive.ini");
             FWNewMasterFile fwNewMasterFile = new FWNewMasterFile(loadConfig);
             System.out.println(request());
             String strFrameworkId = request().body().asJson().get("fwCode").asText();
             String rootorgId = request().body().asJson().get("rootorgId").asText();
-
-            status = fwNewMasterFile.setDefaultFramework(strFrameworkId, rootorgId);
+            String processId = request().body().asJson().get("pid").asText();
+            rep.createReport(strFrameworkId,"Set Default Framework",processId);
+            status = fwNewMasterFile.setDefaultFramework(strFrameworkId, rootorgId,processId);
             // System.out.println(data.toString());
             Result result = ok(status);
             response = CompletableFuture.completedFuture(result);
             return response;
         } catch (Exception e) {
-            System.out.println(e);
+            System.out.println("FrameworkController -> " + e);
             return response;
         }
     }
@@ -191,15 +207,52 @@ public class FrameworkController extends Controller {
             //  String strChannel = request().body().asJson().get("channel").asText();
             //   IniFile loadConfig = new IniFile(strFilePath + "/configLive.ini");
             // FWNewMasterFile fwNewMasterFile = new FWNewMasterFile(loadConfig);
-            String data = reqCompleted;
+            String data = req.toString();
             Result result = ok(data);
             response = CompletableFuture.completedFuture(result);
             return response;
         } catch (Exception e) {
-            System.out.println(e);
+            System.out.println("FrameworkController -> " + e);
             response = CompletableFuture.completedFuture(ok("failed"));
             return response;
         }
 
+    }
+
+    public CompletionStage<Result> getProcessReport(){
+        CompletionStage<Result> response = null;
+        Report rep=new Report();
+        try{
+
+            Map<String, Object> res = rep.returnReport();
+            File data = ((File) res.get("file"));
+            Result result = ok(data);
+            response =
+                    CompletableFuture.completedFuture(result);
+            return response;
+
+        }
+        catch (Exception e){
+            System.out.println("Exception in getProcessReport=> "+e);
+            return response;
+        }
+    }
+
+    public CompletionStage<Result> setAngularLogs(){
+        CompletionStage<Result> response = null;
+try{
+    System.out.println(request());
+    String errmsg = request().body().asJson().get("errmsg").asText();
+    angularLogs alog = new angularLogs();
+    alog.generateLogs(errmsg);
+    Result result = ok("ok");
+    response =
+            CompletableFuture.completedFuture(result);
+
+    return response;
+}
+catch (Exception e){
+return response;
+}
     }
 }

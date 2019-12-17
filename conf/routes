@@ -23,3 +23,9 @@ POST    /getLiveTerms               controllers.FrameworkController.liveTerms
 POST    /setdefaultframework        controllers.FrameworkController.setdefaultframework
 
 GET     /retrieveStatus             controllers.FrameworkController.getStatus
+
+
+GET     /getReport                  controllers.FrameworkController.getProcessReport
+
+
+POST    /setErrorLogs               controllers.FrameworkController.setAngularLogs
