@@ -58,7 +58,7 @@ public class FWCreateExcel {
                      categoryObj = (JSONObject) categoryList.get(i);
                      categoryIdentifier = ((categoryObj.get("identifier")).toString());
                      categoryName = ((categoryObj.get("name")).toString());
-                     categoryCode = categoryIdentifier.substring(categoryIdentifier.indexOf('_') + 1);
+                     categoryCode = categoryIdentifier.substring(categoryIdentifier.lastIndexOf('_') + 1);
                      data.put("" + (i + 2), new Object[]{categoryName, categoryCode});
                      JSONObject allCategories = new JSONObject();
                      allCategories.put("categoryCode", categoryCode);
@@ -81,7 +81,7 @@ public class FWCreateExcel {
                          for (int j = 0; j < termList.size(); j++) {
                              flag = 1;
                              flag = writeParent(strFrameworkId, (JSONObject) termList.get(j), j, i);
-                             checkChild(strFrameworkId, j, i, termCode[2]);
+                             checkChild(strFrameworkId, j, i, termCode[termCode.length - 1]);
                              if (flag == 1) {
                                  rownumber++;
                              }
@@ -176,39 +176,42 @@ public class FWCreateExcel {
             termName = (String) ((termObj).get("name"));
             termIdentifier = ((JSONObject) termList.get(j)).get("identifier").toString();
             termCode = termIdentifier.split("_");
-            JSONObject termdetails = getTermDetails(strFrameworkId, termCode[2]);
-            JSONArray children = (JSONArray) termdetails.get("children");
-            JSONArray parents = (JSONArray) termObj.get("parents");
-            if (j == 0) {
-                data.put("" + (j + 2), new Object[]{categoryCode, termName, termCode[2]});
-            } else {
-                data.put("" + (j + 2), new Object[]{"", termName, termCode[2]});
+            String status = masterObj.readTerm(strFrameworkId, categoryCode, termCode[termCode.length - 1], 3);
+            if (status.equalsIgnoreCase("Live")) {
+                JSONObject termdetails = getTermDetails(strFrameworkId, termCode[termCode.length - 1]);
+                JSONArray children = (JSONArray) termdetails.get("children");
+                JSONArray parents = (JSONArray) termObj.get("parents");
+                if (j == 0) {
+                    data.put("" + (j + 2), new Object[]{categoryCode, termName, termCode[termCode.length - 1]});
+                } else {
+                    data.put("" + (j + 2), new Object[]{"", termName, termCode[termCode.length - 1]});
 
-            }
-            // First Level Parent term
-            if ((children == null || children.size() == 0) && (parents == null || parents.size() == 0)) {
-                createRowsAndColumns(data, workbook.getSheetAt(i + 2), "parentTerms");
+                }
+                // First Level Parent term
+                if ((children == null || children.size() == 0) && (parents == null || parents.size() == 0)) {
+                    createRowsAndColumns(data, workbook.getSheetAt(i + 2), "parentTerms");
 
-            }
-            // Parent term which is also a child
-            else if (children != null && children.size() > 0) {
-                createRowsAndColumns(data, workbook.getSheetAt(i + 2), "parentTerms");
+                }
+                // Parent term which is also a child
+                else if (children != null && children.size() > 0) {
+                    createRowsAndColumns(data, workbook.getSheetAt(i + 2), "parentTerms");
 
-            }
-            // Not a parent term
-            else {
+                }
+                // Not a parent term
+                else {
+                    data.clear();
+                    return 2;
+                }
+
                 data.clear();
-                return 2;
+                return 1;
             }
-
-            data.clear();
-            return 1;
-        }
-        catch (Exception e){
+        } catch (Exception e) {
 
             System.out.println("Exception in create excel writeparent =>" + e);
-             return 3;
+            return 3;
         }
+    return 3;
     }
     // Writing subterms
     public void writeChild(JSONArray children,int j,int i,String strFrameworkId) {
@@ -218,20 +221,23 @@ public class FWCreateExcel {
             childtermName = ((JSONObject) children.get(k)).get("name").toString();
             childtermIdentifier = ((JSONObject) children.get(k)).get("identifier").toString();
             childtermCode = childtermIdentifier.split("_");
-            childData.put("" + (j + 2), new Object[]{childtermName, childtermCode[2]});
-            createRowsAndColumns(childData, workbook.getSheetAt(i + 2), "childterms");
-            cellnumber = cellnumber + 2;
+            String status = masterObj.readTerm(strFrameworkId, categoryCode, childtermCode[childtermCode.length - 1], 3);
+            if (status.equalsIgnoreCase("Live")) {
+
+                childData.put("" + (j + 2), new Object[]{childtermName, childtermCode[childtermCode.length - 1]});
+                createRowsAndColumns(childData, workbook.getSheetAt(i + 2), "childterms");
+                cellnumber = cellnumber + 2;
+                childData.clear();
+                JSONObject temp = masterObj.readTerm(strFrameworkId, categoryCode, childtermCode[childtermCode.length - 1], "readChildTerm");
+
+                termList.add(j + 1, temp);
+
+
+            }
+
+            cellnumber = 3;
             childData.clear();
-            JSONObject temp = masterObj.readTerm(strFrameworkId, categoryCode, childtermCode[2], "readChildTerm");
-
-            termList.add(j + 1, temp);
-
-
-        }
-
-        cellnumber = 3;
-        childData.clear();
-    }
+        } }
     catch(Exception e){
         System.out.println("Exception in create excel writeChild =>" + e);
 
@@ -247,34 +253,39 @@ public class FWCreateExcel {
 
         JSONObject termdetails = getTermDetails(strFrameworkId,termCode);
         JSONArray children = (JSONArray)termdetails.get("children");
-        checkAssociation(termdetails);
+        checkAssociation(strFrameworkId,termdetails);
         if(children != null && children.size() > 0) {
             writeChild(children,j,i,strFrameworkId);
     }
 }
     // Checking for associations
-    public void checkAssociation(JSONObject termDetails){
+    public void checkAssociation(String strFrameworkId,JSONObject termDetails){
         JSONArray association = (JSONArray)termDetails.get("associations");
-        if(association != null && association.size() > 0 && tempTermCode != termCode[2]) {
-            associationData.put(""+(associationCounter+1),new Object[]{categoryCode,termName,termCode[2]});
+        if(association != null && association.size() > 0 && tempTermCode != termCode[termCode.length - 1]) {
+            associationData.put(""+(associationCounter+1),new Object[]{categoryCode,termName,termCode[termCode.length - 1]});
             createRowsAndColumns(associationData,sheet2,"ParentAssociation");
             associationData.clear();
-            writeAssociation(association);
-            tempTermCode = termCode[2];
+            writeAssociation(strFrameworkId,association);
+            tempTermCode = termCode[termCode.length - 1];
         }
     }
     // Writing associations
-    public void writeAssociation(JSONArray association){
-          for(int k=0; k < association.size(); k++){
-             associatedTermIdentifier = (((JSONObject)association.get(k)).get("identifier")).toString();
-             associatedCategory = associatedTermIdentifier.split("_")[1];
-             associatedTermCode = associatedTermIdentifier.split("_")[2];
-              associatedTermName = (((JSONObject)association.get(k)).get("name")).toString();
-              associationData.put(""+(associationCounter+1),new Object[]{associatedCategory,associatedTermName,associatedTermCode});
-              createRowsAndColumns(associationData,sheet2,"createAssociation");
-              associationData.clear();
-              associationCounter++;
-              cellnumberForAssociation =3;
+    public void writeAssociation(String strFrameworkId,JSONArray association){
+          for(int k=0; k < association.size(); k++) {
+              associatedTermIdentifier = (((JSONObject) association.get(k)).get("identifier")).toString();
+              String splitArray[] = associatedTermIdentifier.split("_");
+              associatedCategory = splitArray[splitArray.length - 2];
+              associatedTermCode = splitArray[splitArray.length - 1];
+              String status = masterObj.readTerm(strFrameworkId, associatedCategory, associatedTermCode, 3);
+              if (status.equalsIgnoreCase("Live")) {
+
+                  associatedTermName = (((JSONObject) association.get(k)).get("name")).toString();
+                  associationData.put("" + (associationCounter + 1), new Object[]{associatedCategory, associatedTermName, associatedTermCode});
+                  createRowsAndColumns(associationData, sheet2, "createAssociation");
+                  associationData.clear();
+                  associationCounter++;
+                  cellnumberForAssociation = 3;
+              }
           }
     }
 

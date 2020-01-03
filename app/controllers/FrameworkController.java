@@ -155,12 +155,13 @@ public  static  JSONObject req = new JSONObject();
             FWNewMasterFile fwNewMasterFile = new FWNewMasterFile(loadConfig);
             System.out.println(request());
             int action = request().body().asJson().get("action").asInt();
+            String strFrameworkId = request().body().asJson().get("fwCode").asText();
             Iterator<JsonNode> nodeIterator = request().body().asJson().get("terms").iterator();
             while (nodeIterator.hasNext()) {
                 JsonNode node = nodeIterator.next();
                 String identifier = node.get("identifier").asText();
                 String[] tempArray = identifier.split("_");
-                status = fwNewMasterFile.readTerm(tempArray[0], tempArray[1], tempArray[2], action);
+                status = fwNewMasterFile.readTerm(strFrameworkId, tempArray[tempArray.length - 2], tempArray[tempArray.length - 1], action);
                 if (status.equalsIgnoreCase("Live")) {
                     data.add(node);
                 }
